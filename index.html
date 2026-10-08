@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Muse y su integración con WhatsApp · Tutorial interactivo</title>
+<meta name="description" content="Tutorial práctico para entender y usar Meta Muse desde WhatsApp. Nivel cero, para personas no técnicas.">
+<style>
+/* ============================================================
+   VARIABLES Y BASE
+   ============================================================ */
+:root{
+  --bg:#0a0e1a;
+  --card:#0f172a;
+  --accent:#1e3a5f;
+  --line:#1e293b;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --cyan:#22d3ee;
+  --blue:#38bdf8;
+  --ok:#34d399;
+  --warn:#fbbf24;
+  --bad:#f87171;
+  --violet:#a78bfa;
+  --code-bg:#0b1220;
+  --topbar-bg:rgba(10,14,26,.94);
+}
+body.light{
+  --bg:#eef2f7;
+  --card:#ffffff;
+  --accent:#dbeafe;
+  --line:#cbd5e1;
+  --text:#0f172a;
+  --muted:#475569;
+  --cyan:#0e7490;
+  --blue:#0369a1;
+  --ok:#059669;
+  --warn:#b45309;
+  --bad:#b91c1c;
+  --violet:#6d28d9;
+  --code-bg:#f1f5f9;
+  --topbar-bg:rgba(255,255,255,.95);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px;
+  line-height:1.68;
+  transition:background .25s ease,color .25s ease;
+}
+img{max-width:100%}
+a{color:var(--cyan)}
+
+/* ============================================================
+   BARRA DE PROGRESO
+   ============================================================ */
+.progress-bar{
+  position:fixed;top:0;left:0;right:0;height:3px;
+  background:transparent;z-index:80;pointer-events:none;
+}
+#progressFill{
+  height:100%;width:0;
+  background:linear-gradient(90deg,var(--blue),var(--cyan));
+  transition:width .35s ease;
+  border-radius:0 3px 3px 0;
+}
+
+/* ============================================================
+   CABECERA + PESTAÑAS
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  background:var(--topbar-bg);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.bar{
+  max-width:1080px;margin:0 auto;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:8px 14px 6px;
+}
+.brand{
+  font-weight:800;font-size:.9rem;letter-spacing:.02em;
+  white-space:nowrap;
+}
+.brand span{color:var(--cyan)}
+.tools{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.btn{
+  background:var(--accent);color:var(--text);
+  border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px;
+  font-size:.78rem;font-weight:700;cursor:pointer;
+  font-family:inherit;line-height:1.2;
+  transition:border-color .15s ease,transform .1s ease;
+}
+.btn:hover{border-color:var(--cyan)}
+.btn:active{transform:scale(.96)}
+.btn.icon{padding:6px 9px}
+#searchInput{
+  background:var(--card);color:var(--text);
+  border:1px solid var(--line);border-radius:8px;
+  padding:6px 10px;font-size:.8rem;font-family:inherit;
+  width:150px;outline:none;
+}
+#searchInput:focus{border-color:var(--cyan)}
+.searchCount{
+  font-size:.72rem;color:var(--muted);font-weight:700;
+  white-space:nowrap;
+}
+.tabs{
+  max-width:1080px;margin:0 auto;
+  display:flex;gap:6px;overflow-x:auto;
+  padding:0 14px 9px;
+  scrollbar-width:thin;
+}
+.tabs::-webkit-scrollbar{height:5px}
+.tabs::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+.tab{
+  background:transparent;border:1px solid var(--line);
+  color:var(--muted);
+  padding:7px 13px;border-radius:999px;
+  font-size:.74rem;font-weight:800;letter-spacing:.05em;
+  cursor:pointer;white-space:nowrap;font-family:inherit;
+  transition:all .18s ease;
+}
+.tab:hover{color:var(--text);border-color:var(--cyan)}
+.tab.active{
+  background:linear-gradient(135deg,#1e3a5f,#0e7490);
+  color:#e2e8f0;border-color:var(--blue);
+  box-shadow:0 0 14px rgba(56,189,248,.28);
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap{max-width:1080px;margin:0 auto;padding:16px 14px 90px}
+.panel{display:none;animation:fade .28s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+h1{font-size:1.75em;line-height:1.25;margin:.4em 0 .3em;letter-spacing:-.01em}
+h2{font-size:1.34em;line-height:1.3;margin:1.6em 0 .5em;letter-spacing:-.01em}
+h3{font-size:1.1em;margin:1.3em 0 .4em}
+h4{font-size:1em;margin:1.1em 0 .35em;color:var(--cyan)}
+p{margin:.7em 0}
+ul,ol{margin:.6em 0;padding-left:1.35em}
+li{margin:.32em 0}
+hr{border:0;border-top:1px solid var(--line);margin:2em 0}
+
+.lead{font-size:1.03em;color:var(--muted)}
+.subtitle{font-size:1.02em;color:var(--cyan);font-weight:700;margin:.2em 0 1em}
+.small{font-size:.86em;color:var(--muted)}
+
+/* ============================================================
+   TARJETAS Y BLOQUES
+   ============================================================ */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px 18px;
+  margin:14px 0;
+}
+.card h3:first-child,.card h4:first-child,.card p:first-child{margin-top:0}
+.card h3:last-child,.card p:last-child{margin-bottom:0}
+
+.grid{display:grid;gap:12px}
+@media(min-width:660px){.grid.two{grid-template-columns:1fr 1fr}}
+
+.note{
+  border-left:4px solid var(--cyan);
+  background:var(--card);
+  padding:12px 15px;border-radius:0 12px 12px 0;
+  margin:14px 0;
+}
+.note.warn{border-left-color:var(--warn)}
+.note.danger{border-left-color:var(--bad)}
+.note.tip{border-left-color:var(--ok)}
+.note.ok{border-left-color:var(--ok)}
+.note strong:first-child{display:inline}
+
+.kv{
+  display:flex;gap:10px;flex-wrap:wrap;
+  align-items:baseline;margin:.35em 0;
+}
+.kv b{min-width:0}
+
+/* ============================================================
+   ETIQUETAS DE FIABILIDAD
+   ============================================================ */
+.tag{
+  display:inline-block;
+  padding:1px 7px;border-radius:7px;
+  font-size:.74em;font-weight:800;
+  border:1px solid currentColor;
+  white-space:nowrap;
+  vertical-align:baseline;
+  line-height:1.5;
+}
+.tag.ok{color:var(--ok);background:rgba(52,211,153,.10)}
+.tag.news{color:var(--violet);background:rgba(167,139,250,.10)}
+.tag.mine{color:var(--blue);background:rgba(56,189,248,.10)}
+.tag.unv{color:var(--warn);background:rgba(251,191,36,.10)}
+
+/* ============================================================
+   TABLAS
+   ============================================================ */
+.tablewrap{overflow-x:auto;margin:14px 0;-webkit-overflow-scrolling:touch}
+table{
+  width:100%;border-collapse:collapse;
+  font-size:.88em;
+  background:var(--card);
+  border-radius:10px;overflow:hidden;
+}
+th,td{
+  border:1px solid var(--line);
+  padding:8px 10px;text-align:left;vertical-align:top;
+}
+th{background:var(--accent);color:var(--text);font-weight:800}
+tbody tr:nth-child(even){background:rgba(30,58,95,.16)}
+body.light tbody tr:nth-child(even){background:rgba(219,234,254,.5)}
+
+/* ============================================================
+   CÓDIGO, PROMPTS Y URLS
+   ============================================================ */
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.88em;
+  background:var(--code-bg);
+  padding:1px 5px;border-radius:5px;
+  border:1px solid var(--line);
+}
+.prompt{
+  position:relative;
+  background:var(--code-bg);
+  border:1px dashed #334155;
+  border-radius:12px;
+  padding:14px 14px 12px;
+  margin:12px 0;
+}
+body.light .prompt{border-color:#94a3b8}
+.prompt pre{
+  margin:0;
+  white-space:pre-wrap;
+  word-break:break-word;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.86em;
+  line-height:1.6;
+  color:var(--text);
+}
+.prompt .copyBtn{position:absolute;top:8px;right:8px}
+.promptLabel{
+  font-size:.72em;font-weight:800;letter-spacing:.06em;
+  color:var(--muted);text-transform:uppercase;
+  display:block;margin-bottom:6px;
+}
+
+.urlbox{
+  display:flex;gap:8px;align-items:center;
+  background:var(--code-bg);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:8px 10px;margin:8px 0;
+}
+.urlbox code{
+  flex:1;min-width:0;
+  background:transparent;border:0;padding:0;
+  font-size:.79em;
+  overflow-x:auto;white-space:nowrap;
+  color:var(--cyan);
+}
+.copyBtn{
+  background:var(--accent);color:var(--text);
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:4px 9px;
+  font-size:.72rem;font-weight:800;
+  cursor:pointer;font-family:inherit;
+  white-space:nowrap;
+  transition:border-color .15s ease,transform .1s ease;
+}
+.copyBtn:hover{border-color:var(--cyan)}
+.copyBtn:active{transform:scale(.95)}
+.copyBtn.done{background:var(--ok);color:#04231a;border-color:var(--ok)}
+
+/* ============================================================
+   SVG
+   ============================================================ */
+.hero-svg-mount{
+  display:block;width:100%;
+  margin:6px 0 4px;
+  border-radius:16px;
+  overflow:hidden;
+  line-height:0;
+}
+.hero-svg-mount svg{display:block;width:100%;height:auto;border-radius:16px}
+.hero-svg-mount img{display:block;width:100%;height:auto;border-radius:16px}
+.svgCaption{
+  font-size:.8em;color:var(--muted);
+  text-align:center;margin:6px 0 16px;
+}
+
+/* ============================================================
+   CHECKLIST / INPUTS
+   ============================================================ */
+.check{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:8px 10px;border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--card);
+  margin:7px 0;cursor:pointer;
+  font-size:.94em;
+  transition:border-color .15s ease;
+}
+.check:hover{border-color:var(--cyan)}
+.check input{
+  margin-top:.35em;flex:0 0 auto;
+  width:17px;height:17px;
+  accent-color:var(--cyan);cursor:pointer;
+}
+.check input:checked + span{opacity:.62;text-decoration:line-through}
+.check span{flex:1}
+
+input.fill{
+  width:100%;min-width:120px;
+  background:var(--card);color:var(--text);
+  border:1px solid var(--line);border-radius:7px;
+  padding:6px 8px;font-family:inherit;font-size:.95em;
+  outline:none;
+}
+input.fill:focus{border-color:var(--cyan)}
+
+/* ============================================================
+   BOTÓN VOLVER ARRIBA
+   ============================================================ */
+.to-top{
+  position:fixed;right:16px;bottom:18px;
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#1e3a5f,#0e7490);
+  color:#e2e8f0;border:1px solid var(--blue);
+  font-size:1.2rem;font-weight:800;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  z-index:70;box-shadow:0 6px 20px rgba(0,0,0,.4);
+}
+.to-top.show{display:flex}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+  background:#1e3a5f;color:#e2e8f0;
+  border:1px solid var(--blue);
+  padding:12px 16px;border-radius:12px;
+  font-size:.86rem;max-width:min(520px,92vw);
+  z-index:90;opacity:0;pointer-events:none;
+  transition:opacity .25s ease,transform .25s ease;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
+  line-height:1.5;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+
+/* ============================================================
+   RESALTADO DE BÚSQUEDA
+   ============================================================ */
+mark.search-hl{
+  background:#fbbf24;
+  color:#111827;
+  border-radius:3px;
+  padding:0 2px;
+}
+
+/* ============================================================
+   CRÉDITOS
+   ============================================================ */
+.authorCard{
+  text-align:center;
+  background:linear-gradient(160deg,var(--card),var(--accent));
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:28px 18px;
+  margin:16px 0;
+}
+.authorName{
+  font-size:2.1em;font-weight:900;letter-spacing:-.02em;
+  margin:0;line-height:1.15;
+  background:linear-gradient(90deg,#38bdf8,#22d3ee,#38bdf8);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:#38bdf8;
+  background-size:200% auto;
+  animation:shine 5s linear infinite;
+}
+@keyframes shine{to{background-position:200% center}}
+.authorRole{
+  font-size:1.02em;font-weight:700;color:var(--muted);
+  margin:.35em 0 0;
+}
+.metaRow{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  margin-top:16px;
+}
+.metaPill{
+  background:rgba(10,14,26,.45);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:6px 13px;font-size:.8rem;font-weight:700;
+}
+body.light .metaPill{background:rgba(255,255,255,.75)}
+
+/* ============================================================
+   IMPRESIÓN / PDF
+   ============================================================ */
+@media print{
+  @page{size:A4 portrait;margin:14mm 12mm;}
+
+  html,body{
+    background:#ffffff !important;
+    color:#000000 !important;
+    padding:0 !important;margin:0 !important;
+    font-size:11pt !important;
+  }
+  .progress-bar,.topbar,.toolbar,.tabs,.to-top,.copyBtn,nav,.toast{display:none !important;}
+
+  .panel{
+    display:block !important;
+    page-break-after:auto !important;
+    animation:none !important;
+  }
+  .wrap{padding:0 !important;max-width:none !important}
+
+  .card,.note,.prompt,.urlbox,.tablewrap,.check,.authorCard{
+    background:#ffffff !important;
+    color:#000000 !important;
+    border:1px solid #94a3b8 !important;
+    box-shadow:none !important;
+  }
+  .authorCard{padding:12px !important}
+  .authorName{
+    -webkit-text-fill-color:#000000 !important;
+    color:#000000 !important;
+    background:none !important;
+    animation:none !important;
+    font-size:1.7em !important;
+  }
+  .authorRole,.metaPill{color:#000000 !important;background:#ffffff !important;border:1px solid #94a3b8 !important}
+
+  h1,h2,h3,h4{color:#000000 !important;background:none !important;-webkit-text-fill-color:#000000 !important}
+  p,li,td,th,span,div,strong,em,code,b,i,label{color:#000000 !important}
+  a{color:#000000 !important;text-decoration:underline}
+  th{background:#e2e8f0 !important;color:#000000 !important}
+  pre,code{background:transparent !important;color:#000000 !important;border:0 !important}
+
+  pre,table{overflow:visible !important;white-space:pre-wrap !important;word-break:break-word !important}
+  .tablewrap{overflow:visible !important}
+  table{width:100% !important;border-collapse:collapse !important;font-size:9.5pt !important}
+  th,td{border:1px solid #94a3b8 !important;padding:3px 5px !important}
+
+  .tag{border:1px solid #64748b !important;color:#000000 !important;background:#f1f5f9 !important}
+  .urlbox code{white-space:pre-wrap !important;word-break:break-all !important;color:#000000 !important}
+  .urlbox{display:block !important}
+
+  .check input{accent-color:#000000 !important}
+  .check span{text-decoration:none !important;opacity:1 !important}
+
+  mark.search-hl{background:transparent !important;color:#000000 !important;padding:0 !important}
+
+  [data-svg-hero]{display:block !important;margin:8px 0 !important;border:0 !important}
+  .hero-svg-mount svg,.hero-svg-mount img{width:100% !important;height:auto !important;border-radius:0 !important}
+
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" aria-hidden="true"><div id="progressFill"></div></div>
+
+<!-- ============================================================
+     SVG FUENTE (oculto). De aquí se genera la plantilla única.
+     ============================================================ -->
+<svg id="svgHeroSource" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="55%" stop-color="#122a45"/>
+      <stop offset="100%" stop-color="#1e3a5f"/>
+    </linearGradient>
+    <linearGradient id="gAcc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <filter id="fGlow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g id="svgHero">
+    <!-- Fondo -->
+    <rect x="0" y="0" width="820" height="260" rx="18" fill="url(#gBg)"/>
+
+    <!-- Rejilla -->
+    <g stroke="#1e3a5f" stroke-width="1" opacity="0.45">
+      <path d="M0 52H820M0 104H820M0 156H820M0 208H820"/>
+      <path d="M82 0V260M164 0V260M246 0V260M328 0V260M410 0V260M492 0V260M574 0V260M656 0V260M738 0V260"/>
+    </g>
+
+    <!-- Tú / WhatsApp -->
+    <g>
+      <rect x="50" y="30" width="130" height="180" rx="20" fill="#0a0e1a" stroke="#38bdf8" stroke-width="2"/>
+      <rect x="60" y="46" width="110" height="148" rx="12" fill="#0f172a" stroke="#1e3a5f"/>
+      <rect x="98" y="36" width="34" height="5" rx="2.5" fill="#1e3a5f"/>
+      <rect x="70" y="58" width="58" height="12" rx="6" fill="#1e3a5f">
+        <animate attributeName="opacity" values="0.35;1;0.35" dur="3.6s" begin="0s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="88" y="76" width="72" height="12" rx="6" fill="url(#gAcc)">
+        <animate attributeName="opacity" values="0.35;1;0.35" dur="3.6s" begin="0.6s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="70" y="94" width="50" height="12" rx="6" fill="#1e3a5f">
+        <animate attributeName="opacity" values="0.35;1;0.35" dur="3.6s" begin="1.2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="88" y="112" width="72" height="12" rx="6" fill="url(#gAcc)">
+        <animate attributeName="opacity" values="0.35;1;0.35" dur="3.6s" begin="1.8s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="70" y="130" width="56" height="12" rx="6" fill="#1e3a5f">
+        <animate attributeName="opacity" values="0.35;1;0.35" dur="3.6s" begin="2.4s" repeatCount="indefinite"/>
+      </rect>
+      <circle cx="155" cy="180" r="5" fill="#22d3ee" filter="url(#fGlow)">
+        <animate attributeName="r" values="4;6.5;4" dur="1.8s" repeatCount="indefinite"/>
+      </circle>
+      <text x="115" y="234" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="13" font-weight="700" fill="#7dd3fc">WhatsApp</text>
+    </g>
+
+    <!-- Flujo: tú → agente -->
+    <path d="M186 120 C 280 76 400 76 500 108" fill="none" stroke="#1e3a5f" stroke-width="2" stroke-dasharray="6 8"/>
+    <circle r="5" fill="#22d3ee" filter="url(#fGlow)">
+      <animateMotion dur="3s" repeatCount="indefinite" path="M186 120 C 280 76 400 76 500 108"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="4" fill="#38bdf8">
+      <animateMotion dur="3s" begin="1.5s" repeatCount="indefinite" path="M186 120 C 280 76 400 76 500 108"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Agente Muse -->
+    <g>
+      <circle cx="565" cy="112" r="56" fill="none" stroke="#1e3a5f" stroke-width="1.5" stroke-dasharray="5 8">
+        <animateTransform attributeName="transform" type="rotate" from="0 565 112" to="360 565 112" dur="24s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="565" cy="112" r="44" fill="none" stroke="url(#gAcc)" stroke-width="2" opacity="0.75">
+        <animate attributeName="r" values="44;52;44" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.75;0.15;0.75" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="565" cy="112" r="34" fill="url(#gAcc)" opacity="0.18"/>
+      <circle cx="565" cy="112" r="34" fill="none" stroke="#22d3ee" stroke-width="2" filter="url(#fGlow)"/>
+      <text x="565" y="118" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="15" font-weight="800" fill="#e2e8f0">Muse</text>
+      <g>
+        <circle cx="565" cy="56" r="5" fill="#38bdf8" filter="url(#fGlow)"/>
+        <animateTransform attributeName="transform" type="rotate" from="0 565 112" to="360 565 112" dur="9s" repeatCount="indefinite"/>
+      </g>
+      <text x="565" y="234" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="13" font-weight="700" fill="#7dd3fc">Muse · el agente</text>
+    </g>
+
+    <!-- Flujo: agente → supervisor -->
+    <path d="M624 112 L 690 112" fill="none" stroke="#1e3a5f" stroke-width="2" stroke-dasharray="5 7"/>
+    <circle r="4" fill="#22d3ee" filter="url(#fGlow)">
+      <animateMotion dur="2.2s" repeatCount="indefinite" path="M624 112 L 690 112"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Sentinel -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="4.5s" repeatCount="indefinite"/>
+      <path d="M735 56 L775 72 V112 C775 142 755 160 735 168 C715 160 695 142 695 112 V72 Z" fill="#0f172a" stroke="#22d3ee" stroke-width="2" filter="url(#fGlow)"/>
+      <path d="M722 112 L731 123 L751 98" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <animate attributeName="opacity" values="1;0.3;1" dur="2.4s" repeatCount="indefinite"/>
+      </path>
+      <text x="735" y="234" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="13" font-weight="700" fill="#7dd3fc">Sentinel · supervisor</text>
+    </g>
+  </g>
+</svg>
+
+<!-- ============================================================
+     CABECERA
+     ============================================================ -->
+<header class="topbar">
+  <div class="bar">
+    <div class="brand">Muse <span>·</span> WhatsApp</div>
+    <div class="tools">
+      <input id="searchInput" type="search" placeholder="Buscar…" aria-label="Buscar en el tutorial">
+      <span class="searchCount" id="searchCount"></span>
+      <button class="btn icon" id="btnFontDown" title="Reducir tamaño del texto" aria-label="Reducir tamaño del texto">A−</button>
+      <button class="btn icon" id="btnFontUp" title="Aumentar tamaño del texto" aria-label="Aumentar tamaño del texto">A+</button>
+      <button class="btn icon" id="btnTheme" title="Cambiar modo claro/oscuro" aria-label="Cambiar modo claro/oscuro">🌙</button>
+      <button class="btn icon" id="btnPrint" title="Imprimir o guardar como PDF" aria-label="Imprimir o guardar como PDF">🖨️</button>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Secciones del tutorial">
+    <button class="tab active" data-tab="inicio">INICIO</button>
+    <button class="tab" data-tab="conceptos">CONCEPTOS</button>
+    <button class="tab" data-tab="privacidad">PRIVACIDAD</button>
+    <button class="tab" data-tab="procedimiento">PROCEDIMIENTO</button>
+    <button class="tab" data-tab="practica">PRÁCTICA</button>
+    <button class="tab" data-tab="errores">ERRORES</button>
+    <button class="tab" data-tab="resumen">RESUMEN</button>
+    <button class="tab" data-tab="fuentes">FUENTES</button>
+    <button class="tab" data-tab="creditos">CRÉDITOS</button>
+  </nav>
+</header>
+
+<main class="wrap" id="main">
+
+<!-- ============================================================
+     PANEL · INICIO
+     ============================================================ -->
+<section class="panel active" id="p-inicio">
+
+  <h1>Meta Muse y su integración con WhatsApp</h1>
+  <p class="subtitle">No solo hablar con una IA: darle trabajo</p>
+
+  <div class="hero-svg-mount" data-svg-hero="true" role="img" aria-label="Esquema animado: tú escribes desde WhatsApp, Muse recibe el objetivo y trabaja como agente, y Sentinel supervisa cada acción antes de permitirla."></div>
+  <p class="svgCaption">Tú das el objetivo desde WhatsApp · Muse lo ejecuta · Sentinel supervisa antes de permitir acciones importantes.</p>
+
+  <div class="card">
+    <p style="margin-top:0"><strong>Tutorial práctico «Aprender Haciendo» · Nivel cero · Para personas no técnicas.</strong></p>
+    <p class="small" style="margin-bottom:0">Información comprobada el 8 de octubre de 2026. Muse cambia casi cada semana: si algo de este tutorial no coincide con lo que ves en tu pantalla, <strong>manda siempre lo que ves en pantalla</strong>.</p>
+  </div>
+
+  <div class="note warn">
+    <p style="margin-top:0"><strong>⚠️ Aviso importante antes de seguir.</strong></p>
+    <p style="margin-bottom:0">Hoy Muse <strong>solo está disponible en Estados Unidos y Canadá</strong> (lo explico en la Lección 2). Si estás en otro país, puedes leer y entender todo el tutorial, pero los Pasos 1 a 5 solo podrás hacerlos cuando Muse llegue a tu país. <strong>No te recomiendo atajos</strong> para saltarte esa restricción (también lo explico en la Lección 2).</p>
+  </div>
+
+  <h2>Qué vas a aprender</h2>
+  <ol>
+    <li>Qué es un <strong>agente de IA</strong> y en qué se diferencia de un chatbot.</li>
+    <li>Cómo hablar con Muse desde <strong>WhatsApp</strong>.</li>
+    <li>Cómo darle una tarea y cómo <strong>aprobar o rechazar</strong> lo que quiera hacer.</li>
+    <li>Qué <strong>guarda Muse sobre ti</strong> y cómo mantener el control.</li>
+    <li>Cómo <strong>detener la integración</strong> cuando quieras.</li>
+  </ol>
+  <p>Al terminar podrás decir: <em>«Entiendo qué es Muse, sé qué puede hacer, sé cómo darle una tarea y sé cómo controlar lo que puede hacer con mis datos.»</em></p>
+  <p class="small">Este tutorial no es publicidad. Incluye lo útil, los límites y las partes incómodas (sobre todo la privacidad).</p>
+
+  <h2>Cómo leer este tutorial: las cuatro etiquetas</h2>
+  <p>Cada dato importante lleva una etiqueta para que sepas de dónde sale.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Etiqueta</th><th>Qué significa</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag ok">✅ OFICIAL</span></td><td>Lo dicen Meta o WhatsApp en sus propios documentos.</td></tr>
+      <tr><td><span class="tag news">📰 PRENSA / TERCEROS</span></td><td>Lo cuentan periodistas o sitios independientes. Es menos seguro que lo oficial.</td></tr>
+      <tr><td><span class="tag mine">🧭 MI CONCLUSIÓN</span></td><td>Es una deducción mía. No es un hecho confirmado.</td></tr>
+      <tr><td><span class="tag unv">❓ NO VERIFICADO</span></td><td>No he podido confirmarlo. No lo des por cierto.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Lo que está confirmado y lo que no (léelo primero)</h2>
+  <p>Antes de escribir este tutorial comprobé las afirmaciones del documento de partida. Este es el resultado:</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Afirmación</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>Muse usa Muse Spark, Muse Secure VM, un navegador propio y trabaja en segundo plano</td><td><span class="tag ok">✅ Confirmado</span> por Meta.</td></tr>
+      <tr><td>Muse está disponible en EE. UU. y Canadá, para mayores de 18 años</td><td><span class="tag ok">✅ Confirmado</span> por Meta (EE. UU. y Canadá) y por sus condiciones de uso (18+).</td></tr>
+      <tr><td>Se puede usar una VPN para registrarse desde fuera</td><td><span class="tag unv">❌ No es un procedimiento oficial.</span> No lo recomiendo (ver Lección 2).</td></tr>
+      <tr><td>Muse se conecta con Gmail, Google Calendar, Google Docs y Spotify</td><td><span class="tag ok">✅</span> Gmail confirmado por Meta. <span class="tag news">📰</span> Calendar, Docs y Spotify: los citó un directivo de Meta en redes; Meta no publica la lista completa.</td></tr>
+      <tr><td>Sentinel es un supervisor independiente que revisa las acciones de Muse</td><td><span class="tag ok">✅ Confirmado</span> por Meta.</td></tr>
+      <tr><td>«Muse, olvida [dato]» es un comando</td><td><span class="tag ok">✅</span> Meta confirma que puedes pedirle que olvide cosas. <span class="tag unv">❓</span> <strong>No existe una sintaxis exacta documentada</strong>: se pide con lenguaje normal.</td></tr>
+      <tr><td>«/disconnect» desconecta Muse en WhatsApp</td><td><span class="tag unv">❓ No lo encontré documentado.</span> No lo uses como método. Hay otra vía (ver Paso 5).</td></tr>
+      <tr><td>Existe un código o primer mensaje oficial para activar Muse en WhatsApp</td><td><span class="tag unv">❓ No encontré ninguno documentado.</span> No inventaré uno.</td></tr>
+      <tr><td>«Tu dinero y tus contraseñas están completamente a salvo»</td><td><span class="tag unv">❌ Falso como promesa.</span> Meta misma dice que Muse puede equivocarse y que no es inmune a ataques.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Requisitos previos</h2>
+
+  <h3>Obligatorio</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Requisito</th><th>Detalle</th></tr></thead>
+    <tbody>
+      <tr><td>📍 <strong>País compatible</strong></td><td>Estados Unidos o Canadá (<span class="tag ok">✅ Meta</span>). Fuera de ahí, no disponible.</td></tr>
+      <tr><td>🔞 <strong>Edad</strong></td><td>18 años o más (<span class="tag ok">✅ condiciones de Muse</span>).</td></tr>
+      <tr><td>📱 <strong>Teléfono</strong></td><td>Con la app de <strong>WhatsApp</strong> actualizada y tu número de teléfono activo. <span class="tag news">📰</span> Se informa de que Muse está disponible en iOS y Android.</td></tr>
+      <tr><td>🌐 <strong>Conexión a Internet</strong></td><td>Estable.</td></tr>
+      <tr><td>👤 <strong>Una cuenta de Muse</strong></td><td><span class="tag news">📰</span> Las guías indican que se puede entrar con un número de teléfono, un correo o una cuenta de Facebook o Instagram; <strong>lo que se pide puede variar</strong>. <span class="tag ok">✅</span> Meta dice que unir Muse al «Centro de cuentas» de otras apps de Meta es <strong>opcional</strong>; para mantenerla separada, regístrate con un correo no asociado a otra cuenta de Meta.</td></tr>
+      <tr><td>📧 <strong>Un correo para el reto</strong></td><td>Para el Paso 3 necesitas una cuenta de correo que puedas conectar (en este tutorial, Gmail). <span class="tag mine">🧭</span> Mejor una de prueba.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Opcional</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Requisito</th><th>Para qué</th></tr></thead>
+    <tbody>
+      <tr><td>💻 Computadora con navegador</td><td>Usar Muse en <strong>muse.ai</strong> (<span class="tag ok">✅ confirmado por Meta</span>). Es útil para ver ajustes y aprobaciones con más comodidad.</td></tr>
+      <tr><td>📸 Cuenta de Facebook o Instagram</td><td>Solo si quieres conectar esos servicios.</td></tr>
+      <tr><td>💳 Tarjeta de pago</td><td><strong>No hace falta para practicar.</strong> <span class="tag news">📰</span> Algunos medios dicen que el registro puede pedir una tarjeta (por ejemplo, para verificar la edad); otros no lo mencionan. <span class="tag unv">❓ No verificado.</span></td></tr>
+      <tr><td>⭐ Suscripción de pago</td><td>Solo si te quedas sin el uso gratuito. No la necesitas para este tutorial.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <strong>Las pantallas pueden variar</strong> según el país, la versión de la app y el dispositivo. Cuando no puedo confirmar el nombre exacto de un botón, uso expresiones como «busca la opción equivalente a…».
+  </div>
+
+  <h2>Cómo utilizar este tutorial</h2>
+  <div class="card">
+    <ul style="margin:0">
+      <li><strong>INICIO:</strong> qué es esto, requisitos y checklist.</li>
+      <li><strong>CONCEPTOS:</strong> las cuatro lecciones para entender antes de tocar nada.</li>
+      <li><strong>PRIVACIDAD:</strong> qué sabe Muse de ti y qué control tienes.</li>
+      <li><strong>PROCEDIMIENTO:</strong> Paso 1 (registro), Paso 2 (WhatsApp) y Paso 5 (desconexión).</li>
+      <li><strong>PRÁCTICA:</strong> Paso 3 (tu primer trabajo real) y Paso 4 (reto de privacidad).</li>
+      <li><strong>ERRORES:</strong> lo que suele salir mal y cómo arreglarlo.</li>
+      <li><strong>RESUMEN:</strong> las diez reglas de oro, glosario y preguntas frecuentes.</li>
+      <li><strong>FUENTES:</strong> de dónde sale cada dato, con enlaces copiables.</li>
+      <li><strong>CRÉDITOS:</strong> autoría, fecha y versión del archivo.</li>
+    </ul>
+  </div>
+  <p class="small">Arriba tienes un buscador (resalta coincidencias en todo el tutorial), botones <strong>A−</strong> y <strong>A+</strong> para el tamaño del texto, el botón de <strong>modo claro/oscuro</strong> y el de <strong>imprimir / guardar como PDF</strong>. Los ejercicios con casillas se guardan solos en tu navegador.</p>
+
+  <h2>Checklist de aprendizaje</h2>
+  <p>Marca cada punto cuando lo tengas claro. Se guarda automáticamente en este navegador y alimenta la barra de progreso superior.</p>
+  <label class="check"><input type="checkbox" data-ck="c1"><span>Entiendo la diferencia entre un chatbot y un agente de IA.</span></label>
+  <label class="check"><input type="checkbox" data-ck="c2"><span>Sé en qué países está disponible Muse y por qué no debo usar una VPN.</span></label>
+  <label class="check"><input type="checkbox" data-ck="c3"><span>Entiendo qué es un conector y qué permisos puedo dar.</span></label>
+  <label class="check"><input type="checkbox" data-ck="c4"><span>Sé qué es Sentinel y qué NO garantiza.</span></label>
+  <label class="check"><input type="checkbox" data-ck="c5"><span>Sé qué información puede conocer Muse sobre mí y sobre terceros.</span></label>
+  <label class="check"><input type="checkbox" data-ck="c6"><span>Sé leer una tarjeta de aprobación antes de pulsar «aceptar».</span></label>
+  <label class="check"><input type="checkbox" data-ck="c7"><span>Sé cómo pedirle que olvide algo y cómo verificarlo yo mismo.</span></label>
+  <label class="check"><input type="checkbox" data-ck="c8"><span>Sé cómo desconectar WhatsApp, revocar conectores y parar tareas en curso.</span></label>
+
+  <div class="note tip">
+    <strong>🧭 Mi recomendación práctica.</strong> Haz este tutorial con una <strong>cuenta de correo de prueba</strong> (por ejemplo, un Gmail nuevo), no con tu correo principal. Y no cuentes a Muse contraseñas, datos bancarios ni información sensible real mientras practicas.
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL · CONCEPTOS
+     ============================================================ -->
+<section class="panel" id="p-conceptos">
+
+  <h2>Conceptos: entender antes de empezar</h2>
+  <p class="lead">Cuatro lecciones cortas. Si solo lees una sección de todo el tutorial, que sea esta.</p>
+
+  <h3>Lección 1 · Qué es realmente un agente de IA</h3>
+
+  <div class="note">
+    <p style="margin-top:0"><strong>Chatbot y agente, con una analogía.</strong></p>
+    <p style="margin-bottom:0">Un chatbot es como una persona a la que le haces una pregunta. Un agente es más parecido a un asistente al que le das un objetivo y que puede encargarse de varios pasos para conseguirlo.</p>
+  </div>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th></th><th>Chatbot tradicional</th><th>Agente de IA</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Qué haces tú</strong></td><td>Preguntas</td><td>Das un objetivo</td></tr>
+      <tr><td><strong>Qué hace él</strong></td><td>Responde</td><td>Divide el objetivo en tareas y las ejecuta</td></tr>
+      <tr><td><strong>Quién hace el trabajo</strong></td><td>Tú, con su respuesta</td><td>Él, <strong>si tiene las herramientas y los permisos</strong></td></tr>
+      <tr><td><strong>Ejemplo</strong></td><td>«¿Cómo se escribe un correo de queja?»</td><td>«Prepara ese correo y avísame antes de enviarlo»</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Qué es Muse</h4>
+  <p><span class="tag ok">✅ OFICIAL</span> Meta presenta Muse como un agente personal de IA: no solo responde preguntas, también hace tareas por ti. Según Meta, funciona con estas piezas:</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Pieza</th><th>Qué es, dicho fácil</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Muse Spark</strong></td><td>El <strong>modelo de IA</strong>: el «cerebro» que entiende lo que le pides. (Un <em>modelo</em> es el programa de IA que genera las respuestas.)</td></tr>
+      <tr><td><strong>Muse Secure VM</strong></td><td>Una <strong>computadora aislada en la nube</strong> solo para ti. (<em>VM</em> significa «máquina virtual»: una computadora que existe solo dentro de otra, en Internet.) Ahí viven Muse y tus datos.</td></tr>
+      <tr><td><strong>Navegador propio</strong></td><td>Muse puede abrir una web, rellenar formularios y completar gestiones, como lo haría una persona. Tú puedes ver lo que hace y tomar el control.</td></tr>
+      <tr><td><strong>Segundo plano</strong></td><td>Muse puede seguir trabajando <strong>aunque cierres la app</strong>. Vuelve a avisarte cuando algo cambia o cuando necesita tu aprobación.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Meta también dice que Muse <strong>recuerda lo que le importa a cada persona</strong> (por ejemplo, restricciones alimentarias de tus amigos) y que puede <strong>escribirte sin que se lo pidas</strong> si cree que algo vale la pena. Puedes pedirle que lo haga menos o que lo desactive.</p>
+  <p>Ejemplos que cita Meta: enviar un correo, reservar un viaje, rellenar formularios o negociar en tu nombre.</p>
+
+  <div class="note tip">
+    <span class="tag mine">🧭 MI CONCLUSIÓN</span> Piensa en Muse como un empleado nuevo con acceso a una oficina propia en la nube. Puede hacer mucho, pero un empleado nuevo necesita límites claros y supervisión. De eso trata el resto del tutorial.
+  </div>
+
+  <hr>
+
+  <h3>Lección 2 · Disponibilidad y acceso</h3>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Pregunta</th><th>Respuesta</th></tr></thead>
+    <tbody>
+      <tr><td><strong>¿En qué países está?</strong></td><td><span class="tag ok">✅</span> Meta dijo el 29 de septiembre de 2026 que Muse está disponible en <strong>EE. UU. y Canadá</strong>. <span class="tag news">📰</span> Según la prensa, llegó a EE. UU. el 8 de septiembre y a Canadá el 18. <em>(El texto de lanzamiento del 8 de septiembre solo habla de EE. UU.; vale el dato más reciente.)</em></td></tr>
+      <tr><td><strong>¿Y en el resto del mundo?</strong></td><td><span class="tag ok">✅</span> Meta no ha dado países ni fechas. España, la Unión Europea, el Reino Unido y los países de Latinoamérica <strong>no figuran</strong> entre los disponibles.</td></tr>
+      <tr><td><strong>Edad mínima</strong></td><td><span class="tag ok">✅ 18 años</span> (o más, si tu país exige una edad mayor), según las condiciones de uso de Muse.</td></tr>
+      <tr><td><strong>Cuentas necesarias</strong></td><td>Ver tabla de requisitos en INICIO.</td></tr>
+      <tr><td><strong>¿Lista de espera?</strong></td><td><span class="tag unv">❓</span> No encontré ninguna página oficial de lista de espera. <span class="tag news">📰</span> Algunos medios dicen que, fuera de los países disponibles, la app muestra una pantalla de espera; otros dicen que no hay ninguna. Están en desacuerdo.</td></tr>
+      <tr><td><strong>¿Funciones según la ubicación?</strong></td><td><span class="tag unv">❓</span> Meta no publica una lista de diferencias por país. <span class="tag news">📰</span> Se informa de una app para Mac solo en EE. UU.</td></tr>
+      <tr><td><strong>¿Es gratis?</strong></td><td><span class="tag ok">✅</span> Es gratis para la mayor parte de lo que la gente necesita, <strong>con un límite de uso</strong>. Hay planes de pago para quien quiere más.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Limitaciones para quien está fuera de EE. UU. y Canadá</h4>
+  <p>Si estás fuera, hoy <strong>no puedes</strong> usar Muse de forma oficial. Lo único que Meta ofrece es esperar a que llegue a tu país.</p>
+
+  <h4>La VPN: por qué NO la recomiendo</h4>
+  <p><strong>VPN</strong>: un servicio que hace que tu conexión parezca venir de otro país.</p>
+  <p>El documento de partida proponía usar una VPN gratuita para registrarse desde fuera de EE. UU. Esto es lo que encontré:</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Pregunta</th><th>Respuesta</th></tr></thead>
+    <tbody>
+      <tr><td>¿Meta permite oficialmente entrar con VPN?</td><td><span class="tag unv">❌</span> No encontré <strong>ninguna</strong> fuente oficial que lo permita, lo recomiende o lo describa como método de acceso. <strong>No es un procedimiento oficial.</strong></td></tr>
+      <tr><td>¿Se puede registrar uno con VPN?</td><td><span class="tag unv">❓ No verificado.</span> <span class="tag news">📰</span> Varios sitios dicen que la restricción no depende solo de la conexión, sino también del país de tu cuenta, de la tienda de apps y, según algunos, del método de pago. No hay acuerdo sobre qué se exige.</td></tr>
+      <tr><td>¿Puede dar problemas con la cuenta?</td><td><span class="tag ok">✅</span> Las condiciones de uso permiten a Meta <strong>suspender o cerrar tu acceso a Muse en cualquier momento, sin aviso previo</strong>. Las condiciones no nombran la palabra «VPN», pero te obligan a cumplir sus normas y las leyes aplicables. <span class="tag mine">🧭</span> Es un riesgo real: podrías perder la cuenta y lo que Muse haya guardado.</td></tr>
+      <tr><td>¿Es compatible con WhatsApp?</td><td><span class="tag unv">❓ No verificado.</span> No pude abrir la ayuda oficial de WhatsApp (ver sección de fuentes).</td></tr>
+      <tr><td>¿Es legal?</td><td><span class="tag mine">🧭</span> Usar una VPN no es ilegal en sí mismo en la mayoría de los países. Pero eso no significa que Meta lo permita aquí. No soy abogado; si te preocupa, consulta a uno.</td></tr>
+      <tr><td>¿Es recomendable?</td><td><span class="tag mine">🧭 <strong>No.</strong></span> Si Meta no lo permite, arriesgas tu cuenta y tus datos. Lo prudente es esperar a que Muse llegue oficialmente a tu país.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note warn">
+    Servicios como ProtonVPN o TunnelBear se mencionan aquí <strong>solo como ejemplos de lo que es una VPN</strong>. No son un método de acceso a Muse. Algunas guías de terceros describen trucos más elaborados para saltarse la restricción: <strong>no los sigas ni los copies</strong>.
+  </div>
+
+  <hr>
+
+  <h3>Lección 3 · Conectores y herramientas</h3>
+
+  <div class="note">
+    <p style="margin-top:0"><strong>Qué significa «conectar una aplicación».</strong></p>
+    <p style="margin-bottom:0">Es como darle a Muse una llave limitada para que pueda trabajar con una determinada herramienta.</p>
+  </div>
+
+  <p>A esas llaves Meta las llama <strong>conectores</strong>. Cada conector es un acceso a una app o servicio (tu correo, tu calendario…). Tú eliges <strong>qué llaves le das</strong> y <strong>qué puede hacer con cada una</strong>.</p>
+
+  <h4>Qué dice Meta de los conectores <span class="tag ok">✅ OFICIAL</span></h4>
+  <ul>
+    <li>Puedes conectar apps y servicios de Meta o de terceros.</li>
+    <li>Para conectar, puedes pedírselo a Muse con una frase como «Conecta mi Gmail», o hacerlo desde los ajustes. (Los nombres de las pantallas pueden variar.)</li>
+    <li>En muchos servicios puedes elegir si Muse <strong>solo lee</strong> o también <strong>puede enviar o cambiar cosas</strong>. Por ejemplo, con el correo puedes decidir si Muse solo lo lee o si además puede enviar mensajes por ti.</li>
+    <li>Algunos conectores <strong>avisan a Muse por su cuenta</strong> de cambios. Por ejemplo, un calendario puede avisarle de que ha cambiado tu agenda.</li>
+    <li>Por defecto, Muse <strong>no hace acciones importantes</strong>, como enviar un correo, sin tu aprobación. Puedes cambiar en ajustes cuándo te pide permiso.</li>
+    <li>Cuando <strong>desconectas</strong> un conector, Muse deja de intercambiar datos con él. Pero <strong>lo que Muse ya aprendió usándolo puede seguir en su memoria y en tu historial</strong>. Puedes pedirle que olvide esas interacciones.</li>
+    <li>Tus credenciales (las llaves de acceso) se guardan en un almacén seguro dentro de tu máquina virtual, no a la vista de Muse.</li>
+    <li>Meta añade un detalle útil: el conector de correo <strong>filtra</strong> los códigos de un solo uso, los enlaces para restablecer contraseñas y los enlaces de inicio de sesión, para que Muse no pueda usarlos.</li>
+  </ul>
+
+  <h4>¿Qué aplicaciones puede conectar?</h4>
+  <p>Meta <strong>no publica una lista completa</strong>. Lo que he podido comprobar:</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Servicio</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Gmail</strong></td><td><span class="tag ok">✅ Confirmado:</span> es el ejemplo que usa el Centro de ayuda de Meta.</td></tr>
+      <tr><td><strong>Google Calendar</strong></td><td><span class="tag news">📰</span> Lo citó Alexandr Wang (responsable de IA de Meta) el día del lanzamiento, según sitios que reproducen su mensaje. <span class="tag ok">✅</span> Meta confirma que existen conectores de calendario.</td></tr>
+      <tr><td><strong>Google Docs</strong></td><td><span class="tag news">📰</span> Mismo caso. <span class="tag ok">✅</span> El Centro de ayuda menciona que los datos de Google Workspace se tratan con las normas de Google. No dice qué puede hacer Muse dentro de los documentos.</td></tr>
+      <tr><td><strong>Spotify</strong></td><td><span class="tag news">📰</span> Mismo caso. <span class="tag unv">❓</span> Meta no ha publicado qué puede hacer Muse en Spotify.</td></tr>
+      <tr><td><strong>Facebook e Instagram</strong></td><td><span class="tag ok">✅</span> Mencionados por Meta como conectores propios.</td></tr>
+      <tr><td><strong>Trabajo</strong> (Asana, Notion, Slack, Canva, Dropbox, Shopify, Stripe, Zoom, entre otros)</td><td><span class="tag ok">✅</span> Meta los nombró al lanzar «Muse para pequeñas empresas» (29 de septiembre).</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Para saber qué hay <strong>hoy</strong>, mira la lista dentro de tu app de Muse (en ajustes). Las listas de terceros se quedan viejas rápido.</p>
+
+  <h4>¿Puede usar APIs, navegación web o apps sin conector?</h4>
+  <p><strong>API</strong>: un puente que permite que dos programas se comuniquen entre sí.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Capacidad</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Conectores preparados</strong> (hechos con el proveedor del servicio)</td><td><span class="tag ok">✅ Confirmado.</span></td></tr>
+      <tr><td><strong>APIs / conectores propios</strong></td><td><span class="tag ok">✅</span> Meta dice que Muse <strong>puede escribir sus propios conectores</strong> para servicios que tengan API. <span class="tag news">📰</span> Se informa de que Meta <strong>no revisa</strong> esos conectores personalizados: trátalos con más cautela.</td></tr>
+      <tr><td><strong>Navegación web</strong></td><td><span class="tag ok">✅ Confirmado:</span> puede abrir un navegador, rellenar formularios y completar gestiones.</td></tr>
+      <tr><td><strong>Cualquier app sin conector</strong></td><td><span class="tag unv">❓ No lo des por hecho.</span> Que sea técnicamente posible no significa que funcione siempre. <span class="tag news">📰</span> Un medio dice que a veces hay que hacer pasos a mano.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <hr>
+
+  <h3>Lección 4 · Seguridad: Sentinel</h3>
+
+  <div class="note">
+    <p style="margin-top:0"><strong>Muse es el empleado que hace el trabajo. Sentinel es el supervisor que revisa determinadas acciones antes de permitirlas.</strong></p>
+  </div>
+
+  <h4>Cómo funciona <span class="tag ok">✅ OFICIAL</span></h4>
+  <ul>
+    <li><strong>Sentinel es un agente aparte</strong>, que corre en la misma máquina virtual pero separado de Muse. Muse <strong>no puede saltárselo</strong>.</li>
+    <li>Muse <strong>propone</strong> una acción. <strong>Solo Sentinel decide</strong> si se permite, se deniega o se <strong>pregunta al usuario</strong>.</li>
+    <li>Sentinel controla dos cosas: las <strong>acciones con conectores</strong> (enviar un correo, crear un evento…) y <strong>todo lo que sale a Internet</strong>.</li>
+  </ul>
+
+  <h4>Qué riesgos intenta evitar</h4>
+  <ul>
+    <li><strong>Que un texto escondido en una web o correo engañe a Muse.</strong> Esto se llama <em>inyección de instrucciones</em> («prompt injection»): alguien esconde órdenes en un texto, esperando que la IA las obedezca. Meta reconoce que es un problema <strong>sin resolver</strong> en toda la industria.</li>
+    <li><strong>Que Muse envíe tus datos a un desconocido.</strong></li>
+    <li><strong>Compras o envíos no deseados.</strong></li>
+    <li><strong>Que se roben tus claves.</strong> Muse trabaja con una copia «sustituta» de la clave; la real solo se pone en el último momento, fuera de su vista.</li>
+  </ul>
+
+  <h4>Qué papel desempeñas tú</h4>
+  <ul>
+    <li>Decides qué conectores activas y qué permisos das.</li>
+    <li><strong>Apruebas o rechazas</strong> las acciones importantes.</li>
+    <li>Puedes <strong>revisar lo que Muse hizo y planea hacer</strong>: Meta dice que muestra un registro completo de actividad y que, tocando el avatar de Muse, se ven su actividad y los permisos que has aprobado.</li>
+    <li>Puedes <strong>ver el navegador de Muse y tomar el control</strong> cuando quieras.</li>
+  </ul>
+
+  <h4>Qué acciones requieren aprobación</h4>
+  <ul>
+    <li>Por defecto, las que son <strong>difíciles de deshacer</strong>: enviar un correo, hacer una compra.</li>
+    <li><strong>Las compras</strong> piden aprobación <strong>cada vez</strong>. Para pagar, Muse puede usar Link, de Stripe, que genera una tarjeta de <strong>un solo uso</strong> para que tu tarjeta real quede oculta.</li>
+    <li>Las acciones de solo lectura, de bajo riesgo o ya permitidas pueden hacerse <strong>sin preguntarte</strong>. Meta dice que no busca preguntar por todo.</li>
+    <li>Tú puedes cambiar estos ajustes para que Muse sea <strong>más o menos cauta</strong>.</li>
+  </ul>
+
+  <h4>Cómo son las tarjetas de aprobación</h4>
+  <p>Meta las llama <strong>tarjetas de aprobación</strong>: avisos con botones claros de <strong>aceptar o rechazar</strong>, que describen la acción exacta.</p>
+  <ul>
+    <li><strong>Dónde aparecen:</strong> <span class="tag ok">✅</span> Meta dice que aparecen <strong>en la interfaz de la app o la web de Muse, no dentro de la conversación</strong> con Muse. Es una medida de seguridad: no depende de lo que Muse escriba en el chat.</li>
+    <li><strong>En WhatsApp:</strong> <span class="tag unv">❓</span> No encontré documentado dónde aparece la tarjeta cuando pides algo desde WhatsApp. <span class="tag mine">🧭</span> Mantén abierta la app o la web de Muse cuando hagas tareas con aprobaciones.</li>
+    <li><strong>Tipos de permiso:</strong> <span class="tag ok">✅</span> Según Meta, el permiso puede ser de <strong>una sola vez</strong>, de una sesión, de una tarea, <strong>por tiempo limitado</strong> o <strong>permanente</strong>. Sentinel decide qué opciones te muestra. <span class="tag mine">🧭</span> Elige siempre la <strong>más estrecha</strong> que te ofrezcan.</li>
+    <li><strong>Si rechazas:</strong> <span class="tag ok">✅</span> La acción <strong>no se ejecuta</strong>. Qué hace Muse después (te pregunta, lo intenta de otra forma…) no está documentado: pídele tú qué quieres que haga.</li>
+    <li><strong>Tu «sí» en el chat no es una aprobación.</strong> Meta explica que las aprobaciones son permisos estrictos, no sugerencias en la conversación.</li>
+  </ul>
+
+  <h4>Lo que Sentinel NO garantiza</h4>
+  <div class="note danger">
+    <p style="margin-top:0"><strong>⚠️ Meta no promete seguridad total.</strong> En su propio texto dice que Muse <strong>puede y va a equivocarse</strong> a veces, que «no es inmune a ataques» y que la inyección de instrucciones sigue sin resolverse. Ofrece recompensas de hasta 300.000 dólares a quien encuentre fallos: eso muestra que se toma el tema en serio, pero <strong>no prueba que el sistema sea infalible</strong>.</p>
+    <p style="margin-bottom:0">Además, las condiciones de uso dicen que <strong>tú eres responsable de lo que Muse haga en tu nombre</strong> y que debes <strong>supervisar sus acciones</strong>. Meta limita su responsabilidad. Léelo antes de dar permisos.</p>
+  </div>
+  <p><span class="tag news">📰</span> Un periodista de Inc. contó que la app de Muse para Mac accedió a mensajes que él creía no haber autorizado. Es un relato personal que solo he leído en extracto y no puedo confirmar; lo cito solo como motivo para revisar siempre los permisos.</p>
+
+</section>
+
+<!-- ============================================================
+     PANEL · PRIVACIDAD
+     ============================================================ -->
+<section class="panel" id="p-privacidad">
+
+  <h2>Antes de empezar: esto debes saber sobre tu privacidad</h2>
+  <p class="lead">Esta sección no es alarmista, pero tampoco minimiza. Sigue el orden: qué información puede conocer → para qué la puede usar → qué control tienes → cómo eliminarla → cómo desconectar.</p>
+
+  <h3>1. Qué información puede conocer Muse</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Fuente</th><th>Qué ve Muse</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Tus conversaciones</strong></td><td>Todo lo que le escribes o le dices, también por WhatsApp.</td></tr>
+      <tr><td><strong>Tus correos y apps conectadas</strong></td><td>Solo si tú las conectas, y según el permiso que des (leer o también enviar).</td></tr>
+      <tr><td><strong>Tus preferencias y objetivos</strong></td><td>Lo que le cuentas y lo que ella deduce.</td></tr>
+      <tr><td><strong>Las personas que mencionas</strong></td><td><span class="tag news">📰</span> Ver recuadro de TIME más abajo.</td></tr>
+      <tr><td><strong>Lo que hace en la web</strong></td><td>Cuando Muse navega, <strong>aparece como si fueras tú</strong>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>2. Para qué puede usarla</h3>
+  <p><span class="tag ok">✅ OFICIAL.</span> Para recordar lo que te importa y actuar mejor: por ejemplo, tener en cuenta algo que le dijiste una sola vez. También puede <strong>sugerirte ideas</strong> sin que se lo pidas.</p>
+
+  <h3>3. Lo que descubrió TIME <span class="tag news">📰 PRENSA</span></h3>
+  <p>El 6 de octubre de 2026, <strong>TIME</strong> publicó un análisis de las instrucciones internas de Muse. Según ese análisis:</p>
+  <ul>
+    <li>Muse <strong>actualiza cada hora</strong> unas «fichas» con información sobre ti y sobre las personas que has mencionado en chats, mensajes y correos que ha leído. Esas fichas forman un mapa de tus relaciones.</li>
+    <li><strong>Personas que no usan Muse</strong> también aparecen en esas fichas cuando alguien las menciona.</li>
+    <li>Muse está diseñada para deducir objetivos que <strong>tú no has dicho en voz alta</strong>, y para aprender qué tipo de mensajes funcionan mejor contigo.</li>
+    <li>Meta <strong>no discutió</strong> esos hallazgos. Dijo que Muse recuerda lo que importa al usuario, incluida información sobre otras personas que él decide compartir, y que el usuario conserva el control.</li>
+    <li>Los aprendizajes se <strong>«desidentifican»</strong> (se quitan nombres y datos identificables) y se usan para mejorar el producto.</li>
+  </ul>
+  <div class="note">
+    <strong>Lo que TIME NO dice:</strong> no dice que Muse «espíe» ni que comparta tus datos con anunciantes. Describe un sistema de memoria muy extenso, hecho a propósito, cuyo alcance muchos usuarios probablemente no conocen.
+  </div>
+
+  <h3>4. Qué control tienes <span class="tag ok">✅ OFICIAL</span> salvo indicación</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Control</th><th>Cómo funciona</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Elegir conectores y permisos</strong></td><td>Tú decides qué apps conectas y cuánto acceso dan. Puedes cambiarlo o desconectar <strong>cuando quieras</strong>.</td></tr>
+      <tr><td><strong>Aprobaciones</strong></td><td>Ajustas cuándo Muse debe pedirte permiso.</td></tr>
+      <tr><td><strong>Ver y editar la memoria</strong></td><td>Meta dice que puedes <strong>inspeccionar, editar y descargar</strong> los archivos de tu máquina virtual, <strong>incluida la memoria que Muse tiene de ti</strong>. <span class="tag news">📰</span> TIME indica que se ven desde el explorador de archivos de Muse.</td></tr>
+      <tr><td><strong>Pedirle que olvide</strong></td><td>Meta dice que siempre puedes pedirle que «olvide» cosas concretas (ver más abajo).</td></tr>
+      <tr><td><strong>Entrenamiento de la IA</strong></td><td>Tus conversaciones se pueden usar para <strong>entrenar</strong> los modelos de Meta, tras quitar datos personales clave. Puedes <strong>desactivarlo</strong> en ajustes, en «Controles de datos» (el nombre puede variar).</td></tr>
+      <tr><td><strong>Publicidad</strong></td><td>Meta dice que <strong>no comparte</strong> tus conversaciones ni los datos de tu máquina virtual con sus sistemas de anuncios. <strong>Pero:</strong> como Muse navega «como tú», si compra algo en una web, esa web podría usar tu visita para mostrarte anuncios.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>5. Cómo olvidar información: el comando «Muse, olvida [dato]»</h3>
+  <p>Comprobé si «Muse, olvida [dato]» es un comando exacto:</p>
+  <ul>
+    <li><span class="tag ok">✅</span> Meta confirma que puedes <strong>pedirle a Muse que olvide cosas</strong>. Su Centro de ayuda lo dice también para las interacciones con conectores.</li>
+    <li><span class="tag unv">❓</span> <strong>No existe una sintaxis exacta documentada.</strong> No hay palabra clave ni formato especial. <strong>Se pide con lenguaje normal</strong>, por ejemplo: <em>«Olvida lo que sabes sobre [tema]»</em>.</li>
+    <li><span class="tag news">⚠️ 📰 TIME:</span> pedirle que olvide <strong>no necesariamente borra el mensaje original</strong> donde lo contaste, que puede seguir visible en el chat. TIME añade que las instrucciones internas de Muse le dicen que <strong>no se lo explique al usuario</strong>. Por eso, además de pedírselo, <strong>comprueba tú mismo</strong> la memoria y el historial (lo practicarás en el Paso 4).</li>
+    <li>Otro procedimiento: puedes <strong>editar directamente los archivos de memoria</strong> (ver tabla anterior).</li>
+  </ul>
+
+  <h3>6. Límites que debes conocer</h3>
+  <ul>
+    <li><span class="tag ok">✅</span> Hoy los datos están aislados por usuario, pero Meta admite que esa arquitectura <strong>no impide que Meta acceda a los datos cuando sea necesario</strong> para dar soporte, proteger o hacer funcionar el servicio.</li>
+    <li><span class="tag ok">✅</span> Las condiciones de uso dicen que Meta puede <strong>registrar y conservar</strong> los registros de las acciones de Muse (seguridad, abuso, mejora del servicio, requisitos legales).</li>
+    <li><span class="tag ok">✅</span> Meta anuncia <strong>«Muse Confidential VM»</strong>, donde los datos estarían cifrados con una clave que solo tú tendrías, de modo que ni Meta podría acceder. <strong>Todavía no está disponible</strong> (según TIME, a 6 de octubre). No lo des por hecho.</li>
+    <li><span class="tag ok">✅</span> Las condiciones te piden tener el <strong>permiso de terceros</strong> cuyos datos personales puedan procesarse (por ejemplo, personas que aparecen en tus correos). <span class="tag mine">🧭</span> Piénsalo antes de conectar tu correo principal.</li>
+    <li><span class="tag unv">❓ No he podido verificar</span> si los mensajes con Muse en WhatsApp tienen el mismo cifrado que tus chats personales. No lo asumas; lee la ayuda oficial de WhatsApp.</li>
+  </ul>
+
+  <h3>7. Cómo desconectar</h3>
+  <p>Resumen: <strong>ajustes de la app o la web de Muse → conectores / canales de mensajería → desconectar.</strong> Los detalles, y la diferencia entre desconectar y borrar datos, están en el <strong>Paso 5</strong>, dentro de la pestaña PROCEDIMIENTO.</p>
+
+  <div class="note tip">
+    <span class="tag mine">🧭 MI RECOMENDACIÓN PRÁCTICA</span> Haz este tutorial con una <strong>cuenta de correo de prueba</strong> (por ejemplo, un Gmail nuevo), no con tu correo principal. Y no cuentes a Muse contraseñas, datos bancarios ni información sensible real mientras practicas.
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL · PROCEDIMIENTO
+     ============================================================ -->
+<section class="panel" id="p-procedimiento">
+
+  <h2>Procedimiento: Paso 1, Paso 2 y Paso 5</h2>
+  <p class="lead">Cada paso tiene el mismo formato: objetivo → qué está pasando → qué haces → por qué → qué deberías ver → qué hacer si algo sale mal.</p>
+
+  <div class="note warn">
+    <strong>⚠️ Recuerda.</strong> Solo haz los Pasos 1 y 2 si estás en EE. UU. o Canadá y tienes 18 años o más. Si no, <strong>no sigas con atajos</strong>.
+  </div>
+
+  <!-- PASO 1 -->
+  <h3 id="paso1">Paso 1 · El registro</h3>
+
+  <div class="card">
+    <p style="margin-top:0"><strong>🎯 OBJETIVO.</strong> Tener una cuenta de Muse lista, con los ajustes de privacidad y de aprobaciones revisados <strong>antes</strong> de conectar nada.</p>
+    <p style="margin-bottom:0"><strong>🧠 QUÉ ESTÁ PASANDO.</strong> Estás creando tu propio «espacio» en Muse: una máquina virtual privada donde vivirá tu agente. Primero se crea la cuenta y después se ajustan las protecciones.</p>
+  </div>
+
+  <h4>Acción 1.1 · Abre Muse desde una fuente oficial</h4>
+  <p><strong>HAZ ESTO.</strong></p>
+  <ol>
+    <li>En tu teléfono, descarga la app de Muse desde la tienda oficial (App Store en iPhone, Google Play en Android). Busca una app de <strong>Meta</strong> llamada «Muse». <span class="tag news">📰</span> Su nombre en la tienda parece ser «Muse from Meta».</li>
+    <li>O, en una computadora, entra en <strong>muse.ai</strong>.</li>
+  </ol>
+  <p><strong>¿POR QUÉ?</strong> Meta confirma que Muse está disponible en iOS, Android y en la web (muse.ai). Usar la tienda oficial evita apps falsas.</p>
+  <p><strong>¿QUÉ DEBERÍAS VER?</strong> Una pantalla de inicio de sesión o de registro. Su aspecto puede variar.</p>
+  <p><strong>SI NO APARECE.</strong> Si no encuentras la app o ves un aviso de «no disponible en tu país», significa que Muse aún no llegó a tu región. <span class="tag mine">🧭</span> Lo prudente es esperar a su lanzamiento oficial.</p>
+
+  <h4>Acción 1.2 · Crea tu cuenta</h4>
+  <p><strong>HAZ ESTO.</strong></p>
+  <ol>
+    <li>Elige cómo registrarte entre las opciones que te muestre la pantalla (<span class="tag news">📰</span> se informa de teléfono, correo o cuenta de Facebook/Instagram).</li>
+    <li>Confirma que tienes 18 años o más. <span class="tag news">📰</span> Puede pedirte verificar la edad. No he podido confirmar cómo.</li>
+    <li>Sigue las indicaciones hasta entrar.</li>
+  </ol>
+  <p><strong>¿POR QUÉ?</strong> Muse necesita saber quién eres para crear tu máquina virtual y vincular tus permisos.</p>
+  <p><strong>¿QUÉ DEBERÍAS VER?</strong> Te dará la bienvenida y, según la prensa, un recorrido inicial.</p>
+  <p><strong>SI NO APARECE.</strong> Si te pide algo que no esperabas (por ejemplo, una tarjeta), <strong>para y lee con calma</strong> lo que dice la pantalla antes de continuar.</p>
+
+  <h4>Acción 1.3 · Ponle nombre a tu agente (opcional)</h4>
+  <p><strong>HAZ ESTO.</strong> Si Muse te lo propone, elige un nombre para tu agente.</p>
+  <p><strong>¿POR QUÉ?</strong> <span class="tag ok">✅</span> Meta dice que ponerle nombre y avatar es una de las funciones que más gusta a los usuarios.</p>
+  <p><strong>¿QUÉ DEBERÍAS VER?</strong> Tu agente con el nombre que elegiste.</p>
+  <p><strong>SI NO APARECE.</strong> Puedes saltarte este paso: no afecta a la seguridad.</p>
+
+  <h4>Acción 1.4 · Revisa los controles de datos ANTES de seguir</h4>
+  <p><strong>HAZ ESTO.</strong></p>
+  <ol>
+    <li>Abre los <strong>ajustes</strong> de Muse.</li>
+    <li>Busca la opción equivalente a <strong>«Controles de datos»</strong> (en inglés, «Data controls»).</li>
+    <li>Decide si quieres que tus conversaciones se usen para entrenar los modelos de Meta.</li>
+  </ol>
+  <p><strong>¿POR QUÉ?</strong> Según Meta y sus condiciones de uso, se pueden usar para entrenar la IA salvo que lo desactives. <span class="tag news">📰</span> Un medio indica que por defecto está activado.</p>
+  <p><strong>¿QUÉ DEBERÍAS VER?</strong> Un interruptor relacionado con «mejorar los modelos de IA». <span class="tag news">📰</span> El texto exacto puede variar.</p>
+  <p><strong>SI NO APARECE.</strong> Recorre todos los ajustes. Si no lo encuentras, <strong>no conectes datos sensibles</strong> hasta encontrarlo.</p>
+
+  <h4>Acción 1.5 · Ajusta las aprobaciones al nivel más prudente</h4>
+  <p><strong>HAZ ESTO.</strong></p>
+  <ol>
+    <li>En los ajustes, busca la sección de <strong>permisos</strong> o <strong>aprobaciones</strong>.</li>
+    <li>Elige la opción que haga que Muse <strong>te pregunte siempre</strong> (<span class="tag news">📰</span> algunos medios la llaman «Always ask»).</li>
+  </ol>
+  <p><strong>¿POR QUÉ?</strong> <span class="tag ok">✅</span> Meta dice que puedes elegir cuándo Muse pide tu aprobación. <span class="tag mine">🧭</span> Mientras aprendes, conviene que pregunte siempre; más tarde puedes relajarlo si ves que hay demasiada fricción.</p>
+  <p><strong>¿QUÉ DEBERÍAS VER?</strong> Una opción de cautela alta o media.</p>
+  <p><strong>SI NO APARECE.</strong> Revisa de nuevo los ajustes. Si no existe, no pases al Paso 3 hasta aclararlo.</p>
+
+  <div class="note tip">
+    <strong>🧪 RETO.</strong> Escríbele a Muse: <em>«Hola. Explícame qué puedes hacer y qué NO puedes hacer, en lenguaje sencillo.»</em> Compara su respuesta con la Lección 1. <strong>Una IA puede equivocarse al hablar de sí misma:</strong> lo que digan Meta o los ajustes manda sobre lo que diga ella.
+  </div>
+  <p><span class="tag unv">⚠️ <strong>Idioma.</strong></span> No he podido comprobar qué idiomas admite Muse. Si no responde bien en español, prueba en inglés.</p>
+
+  <hr>
+
+  <!-- PASO 2 -->
+  <h3 id="paso2">Paso 2 · Activación en WhatsApp</h3>
+
+  <div class="card">
+    <p style="margin-top:0"><strong>🎯 OBJETIVO.</strong> Poder hablar con tu Muse desde WhatsApp, como con cualquier contacto.</p>
+    <p style="margin-bottom:0"><strong>🧠 QUÉ ESTÁ PASANDO.</strong> <span class="tag ok">✅</span> Meta dice que Muse está pensada para comunicarse como lo haces con personas, <strong>en su app o directamente en WhatsApp</strong>. Muse <strong>no corre en tu teléfono</strong>: vive en su máquina virtual en la nube. WhatsApp es solo una «ventana» para hablar con ella.</p>
+  </div>
+
+  <div class="note">
+    <span class="tag mine">🧭</span> <strong>No confundas Muse con Meta AI.</strong> WhatsApp ya incluye un asistente llamado <strong>Meta AI</strong>. <span class="tag news">📰</span> Según las fuentes, Muse es un agente <strong>distinto</strong>: es tu agente personal y requiere su propia cuenta.
+  </div>
+
+  <div class="note warn">
+    <strong>❓ Lo que no está confirmado.</strong> Meta <strong>no ha publicado</strong>, que yo haya podido encontrar, un procedimiento paso a paso ni un código o mensaje inicial para activar Muse en WhatsApp. La ayuda de WhatsApp que figura entre las fuentes <strong>no pude abrirla</strong> (bloquea la lectura automática). Por eso <strong>no escribo ningún código ni comando inventado</strong>. Lo siguiente es lo que sí está respaldado.
+  </div>
+
+  <h4>👉 HAZ ESTO</h4>
+  <ol>
+    <li>Verifica que ya completaste el Paso 1 y que tu <strong>WhatsApp está actualizado</strong>.</li>
+    <li>Abre los ajustes de Muse y busca la opción equivalente a <strong>«Canales de mensajería»</strong> («Messaging channels») y, dentro, <strong>WhatsApp</strong>.
+      <ul>
+        <li><span class="tag news">📰</span> Un sitio independiente observó esa ruta en la versión web el 3 de octubre de 2026: menú inferior izquierdo → Ajustes → Canales de mensajería → WhatsApp. <strong>No está en el Centro de ayuda de Meta.</strong></li>
+        <li><span class="tag news">📰</span> Otras guías hablan de un enlace o indicaciones dentro de muse.ai o de la app. El nombre exacto puede variar.</li>
+      </ul>
+    </li>
+    <li>Sigue <strong>solo</strong> las instrucciones que te muestre Muse en pantalla.</li>
+    <li>Si WhatsApp o Muse te piden un código o que envíes un mensaje, usa <strong>únicamente</strong> el que aparezca en tu pantalla. No copies códigos de vídeos o tutoriales.</li>
+  </ol>
+
+  <div class="note danger">
+    <strong>⚠️ ATENCIÓN</strong> (consejo general de seguridad de WhatsApp, no específico de Muse). Nunca compartas con nadie el código de seis dígitos que WhatsApp envía por SMS para registrar tu cuenta. Alguien que te pida ese código para «activar Muse» probablemente intenta robarte la cuenta.
+  </div>
+
+  <h4>👀 QUÉ DEBERÍAS VER</h4>
+  <ul>
+    <li><span class="tag news">📰</span> En los ajustes de Muse, WhatsApp aparece como <strong>conectado</strong>, con un botón para <strong>desconectar</strong>.</li>
+    <li>Una conversación con Muse dentro de WhatsApp.</li>
+    <li><span class="tag news">📰</span> Esa conversación aparece también en muse.ai como un «canal» propio.</li>
+  </ul>
+
+  <h4>💡 POR QUÉ</h4>
+  <p>Vincular WhatsApp permite escribirle a tu agente sin abrir otra app. Es cómodo, pero también significa que tu agente está al alcance de cualquiera que tenga tu teléfono desbloqueado. <span class="tag mine">🧭</span> Protege tu teléfono con bloqueo de pantalla.</p>
+
+  <h4>🧪 RETO</h4>
+  <p>Envía un primer mensaje sencillo por WhatsApp: <em>«Hola, ¿puedes decirme qué puedes hacer desde WhatsApp y qué no?»</em> Comprueba si te contesta. <strong>Meta no ha explicado</strong> si alguna función cambia entre WhatsApp y la app (<span class="tag news">📰</span>), así que apunta lo que te diga y contrástalo con lo que veas.</p>
+
+  <h4>SI NO APARECE</h4>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Qué pasa</th><th>Motivo más probable</th></tr></thead>
+    <tbody>
+      <tr><td>No encuentras «Canales de mensajería»</td><td>El nombre cambia o la función aún no está en tu cuenta. Busca algo equivalente a «WhatsApp» en ajustes.</td></tr>
+      <tr><td>No te contesta en WhatsApp</td><td>La vinculación no se completó. Revisa el estado en los ajustes de Muse.</td></tr>
+      <tr><td>Te pide algo que no entiendes</td><td>Detente y no pases datos hasta aclararlo.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <hr>
+
+  <!-- PASO 5 -->
+  <h3 id="paso5">Paso 5 · Desconexión</h3>
+
+  <div class="card">
+    <p style="margin-top:0"><strong>🎯 OBJETIVO.</strong> Saber exactamente <strong>cómo detener la integración</strong> y qué efecto tiene cada opción.</p>
+    <p style="margin-bottom:0"><strong>🧠 QUÉ ESTÁ PASANDO.</strong> «Desconectar» puede significar cosas muy distintas. Esta tabla las separa:</p>
+  </div>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Qué quieres hacer</th><th>Qué hace</th><th>Qué NO hace</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Dejar de usar Muse</strong></td>
+        <td>Dejas de escribirle.</td>
+        <td>⚠️ <strong>No la detiene.</strong> <span class="tag ok">✅</span> Meta dice que Muse puede seguir trabajando en segundo plano y por horarios. Cancela antes tus objetivos y tareas en curso.</td>
+      </tr>
+      <tr>
+        <td><strong>Desconectar WhatsApp</strong></td>
+        <td>Muse deja de usar WhatsApp como canal.</td>
+        <td>No borra lo que Muse ya sabe, ni tu cuenta.</td>
+      </tr>
+      <tr>
+        <td><strong>Revocar permisos (conectores)</strong></td>
+        <td>Muse deja de intercambiar datos con ese servicio.</td>
+        <td>No borra lo que ya aprendió.</td>
+      </tr>
+      <tr>
+        <td><strong>Eliminar información</strong></td>
+        <td>Pides olvidar, editas la memoria, borras archivos.</td>
+        <td>Puede no borrar el mensaje original del chat (<span class="tag news">📰 TIME</span>). Meta puede conservar registros (<span class="tag ok">✅ condiciones de uso</span>).</td>
+      </tr>
+      <tr>
+        <td><strong>Eliminar la cuenta</strong></td>
+        <td>Pone fin a tu uso de Muse.</td>
+        <td><span class="tag unv">❓</span> No encontré un procedimiento oficial verificado.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>👉 HAZ ESTO</h4>
+
+  <p><strong>1. Para y revisa tareas pendientes.</strong> Pregúntale: <em>«Enséñame todas las tareas y objetivos que tienes en marcha.»</em> Cancela los que no quieras. Compruébalo en la pestaña de metas o en el registro de actividad (los nombres pueden variar).</p>
+
+  <p><strong>2. Desconecta WhatsApp.</strong></p>
+  <ul>
+    <li><span class="tag unv">❓</span> <strong>El comando «/disconnect» no lo encontré documentado.</strong> Ni en Meta ni en las fuentes consultadas. <strong>No lo uses como método.</strong> No sé qué haría Muse si lo escribes como mensaje.</li>
+    <li><span class="tag news">📰</span> La vía que sí se ha observado (no oficial): ajustes de Muse → <strong>Canales de mensajería</strong> → <strong>WhatsApp</strong> → botón <strong>Desconectar</strong>. Un sitio independiente la describió el 3 de octubre de 2026; Meta no la documentaba entonces en su Centro de ayuda. El nombre exacto puede variar.</li>
+    <li><span class="tag unv">❓</span> No está claro si desconectar borra los mensajes anteriores de WhatsApp. Tampoco está confirmado que borrar el chat en tu WhatsApp elimine algo del lado de Muse.</li>
+  </ul>
+
+  <p><strong>3. Revoca los conectores.</strong></p>
+  <ul>
+    <li>En ajustes de Muse → <strong>Conectores</strong> → desconecta cada servicio.</li>
+    <li>Para Facebook, Instagram y Threads: <span class="tag news">📰</span> se gestionan desde el <strong>Centro de cuentas</strong>.</li>
+    <li><strong>Revisa también desde el servicio original.</strong> Por ejemplo, en tu cuenta de Google puedes ver y quitar las apps con acceso en <em>myaccount.google.com/permissions</em> (ruta de Google, no de Muse; los nombres pueden variar).</li>
+    <li><strong>No des por hecho</strong> que revocar un permiso borra lo que Muse ya copió o aprendió, ni que pueda recuperar mensajes ya enviados.</li>
+  </ul>
+
+  <p><strong>4. Elimina información.</strong></p>
+  <ul>
+    <li>Pídele que olvide lo que quieras (Paso 4, Parte D).</li>
+    <li>Edita o borra los archivos de memoria (Paso 4, Parte C).</li>
+    <li><span class="tag ok">✅</span> Meta dice que puedes <strong>descargar</strong> los archivos de tu máquina virtual; <span class="tag news">📰</span> TIME indica que se puede pedir una exportación.</li>
+    <li><span class="tag news">📰</span> Hay un artículo del Centro de ayuda de Meta sobre «administrar o eliminar tus datos de Muse» que <strong>no pude abrir</strong>: léelo tú.</li>
+    <li>Recuerda: <span class="tag ok">✅</span> Meta puede conservar <strong>registros</strong> de acciones, y hoy <span class="tag ok">✅</span> <strong>no existe</strong> el modo con cifrado que impediría a Meta acceder.</li>
+  </ul>
+
+  <p><strong>5. Si quieres cerrar la cuenta.</strong></p>
+  <ul>
+    <li><span class="tag unv">❓</span> <strong>No he podido verificar el procedimiento oficial</strong> para eliminar la cuenta. Busca en el Centro de ayuda de Meta o en los ajustes de la cuenta. Si no lo encuentras, usa el formulario de <strong>Ayuda y soporte</strong> de Muse.</li>
+    <li>Si registraste Muse con un correo separado de otras cuentas de Meta, <span class="tag ok">✅</span> eso mantiene la cuenta aparte del resto de tus servicios de Meta.</li>
+  </ul>
+
+  <h4>👀 QUÉ DEBERÍAS VER</h4>
+  <ul>
+    <li>WhatsApp <strong>ya no</strong> figura como canal conectado.</li>
+    <li>Los conectores aparecen <strong>desconectados</strong>.</li>
+    <li>Muse ya no puede usar tus apps para ninguna tarea.</li>
+  </ul>
+
+  <h4>💡 POR QUÉ</h4>
+  <p>Cada capa se controla por separado: el canal (WhatsApp), los permisos (conectores), la memoria (datos) y la cuenta. Si solo quitas una, las demás siguen ahí.</p>
+
+  <h4>🧪 RETO</h4>
+  <p>Haz una <strong>desconexión completa de práctica</strong>: cancela tareas, desconecta WhatsApp, desconecta Gmail y pide a Muse que olvide tus datos de prueba. Luego escríbele <em>«¿Qué sigues pudiendo hacer en mi nombre?»</em> y <strong>compara su respuesta con los ajustes</strong>.</p>
+
+</section>
+
+<!-- ============================================================
+     PANEL · PRÁCTICA
+     ============================================================ -->
+<section class="panel" id="p-practica">
+
+  <h2>Práctica: Paso 3 y Paso 4</h2>
+  <p class="lead">Aquí es donde de verdad se aprende. Los prompts están en cajas con botón <strong>COPIAR</strong> para que los pegues tal cual.</p>
+
+  <div class="note danger">
+    <strong>⚠️ ATENCIÓN.</strong> Usa una <strong>cuenta de correo de prueba</strong>. No envíes nada a otras personas hasta terminar. No escribas nunca contraseñas, datos bancarios ni información sensible real.
+  </div>
+
+  <!-- PASO 3 -->
+  <h3 id="paso3">Paso 3 · Reto práctico: tu primer trabajo</h3>
+
+  <div class="card">
+    <p style="margin-top:0"><strong>🎯 OBJETIVO.</strong> Hacer que Muse prepare un <strong>correo real</strong> sin enviarlo hasta que tú lo apruebes, y aprender a <strong>formular, revisar, rechazar, modificar y aprobar</strong>.</p>
+    <p style="margin-bottom:0"><strong>🧠 QUÉ ESTÁ PASANDO.</strong> Vas a practicar el ciclo completo de un agente: <em>objetivo → plan → propuesta de acción → tu decisión</em>. Para que sea de bajo riesgo, el correo te lo envías <strong>a ti mismo</strong>.</p>
+  </div>
+
+  <div class="note warn">
+    <strong>⚠️ ATENCIÓN.</strong>
+    <ul style="margin-bottom:0">
+      <li>Usa una <strong>cuenta de correo de prueba</strong>, no tu correo principal.</li>
+      <li><strong>No</strong> envíes nada a otras personas hasta haber terminado este reto.</li>
+      <li>Para enviar correos, Muse necesita el permiso de <strong>enviar</strong>, no solo de leer. Concédelo <strong>solo mientras practicas</strong> y retíralo en el Paso 5.</li>
+      <li>Según las condiciones de Muse, <strong>tú eres responsable</strong> de lo que envíe en tu nombre.</li>
+    </ul>
+  </div>
+
+  <h4>Preparación · Conecta tu Gmail</h4>
+  <ol>
+    <li>Escríbele a Muse: <em>«Conecta mi Gmail»</em>. (Es el ejemplo que usa el Centro de ayuda de Meta.) O busca en ajustes la sección de <strong>Conectores</strong>.</li>
+    <li><span class="tag news">📰</span> Sigue las pantallas: elegir Gmail, leer la información, continuar e iniciar sesión con Google. Los nombres pueden variar.</li>
+    <li>Cuando Google te muestre los <strong>permisos</strong>, léelos. Concede el mínimo necesario para el reto.</li>
+  </ol>
+
+  <h4>🔹 Parte A · Formula un objetivo</h4>
+  <p><strong>👉 HAZ ESTO.</strong> Envía un mensaje con un objetivo claro. Cambia lo que va entre corchetes:</p>
+
+  <div class="prompt">
+    <span class="promptLabel">Prompt A · objetivo claro</span>
+    <button class="copyBtn" type="button" data-copy="Quiero enviarme un correo de prueba para practicar. Mi dirección es [TU CORREO DE PRUEBA]. Asunto: &quot;Prueba de Muse&quot;. Contenido: una lista de tres planes sencillos para este fin de semana (inventa tú los planes). Antes de enviar nada, enséñame aquí el borrador.">Copiar</button>
+    <pre>Quiero enviarme un correo de prueba para practicar. Mi dirección es [TU CORREO DE PRUEBA]. Asunto: "Prueba de Muse". Contenido: una lista de tres planes sencillos para este fin de semana (inventa tú los planes). Antes de enviar nada, enséñame aquí el borrador.</pre>
+  </div>
+
+  <p><strong>🧠 QUÉ ESTÁ PASANDO.</strong> Un buen objetivo dice <strong>qué</strong> quieres, <strong>para quién</strong>, <strong>con qué contenido</strong> y <strong>qué NO debe hacer sin permiso</strong>.</p>
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> Un borrador del correo en el chat. Si todavía no ha enviado nada, vas bien.</p>
+
+  <h4>🔹 Parte B · Pide varias acciones y comprueba el plan</h4>
+  <p><strong>👉 HAZ ESTO.</strong> Envía:</p>
+
+  <div class="prompt">
+    <span class="promptLabel">Prompt B · plan de tres pasos</span>
+    <button class="copyBtn" type="button" data-copy="Haz estas tres cosas en orden: 1) revisa que el borrador no tenga errores; 2) dime a qué dirección lo enviarías; 3) cuéntame qué herramienta o aplicación vas a usar. No lo envíes todavía.">Copiar</button>
+    <pre>Haz estas tres cosas en orden: 1) revisa que el borrador no tenga errores; 2) dime a qué dirección lo enviarías; 3) cuéntame qué herramienta o aplicación vas a usar. No lo envíes todavía.</pre>
+  </div>
+
+  <p>Después, mira el <strong>registro de actividad</strong>: <span class="tag ok">✅</span> Meta dice que al tocar el avatar de Muse se ve su actividad y los permisos aprobados. (El nombre y el lugar pueden variar.)</p>
+  <p><strong>💡 POR QUÉ.</strong> Un agente puede encadenar varios pasos. Tú puedes pedirle que te explique el plan <strong>y verificarlo</strong> en el registro, en vez de fiarte solo de lo que diga en el chat.</p>
+
+  <h4>🔹 Parte C · Llega la aprobación y la rechazas</h4>
+  <p><strong>👉 HAZ ESTO.</strong></p>
+  <ol>
+    <li>Escribe: <em>«Envíalo.»</em></li>
+    <li>Espera la <strong>tarjeta de aprobación</strong>: <span class="tag ok">✅</span> para enviar un correo, Muse debe pedir tu aprobación por defecto, con botones para aceptar o rechazar.</li>
+    <li><strong>Lee</strong> destinatario, asunto y texto. <strong>Pulsa «rechazar».</strong></li>
+    <li>Abre tu Gmail y mira en <strong>Enviados</strong> y en la <strong>Bandeja de entrada</strong>.</li>
+  </ol>
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> Una tarjeta con la acción exacta. Tras rechazar, <strong>no debe llegar ningún correo</strong>.</p>
+  <p><strong>💡 POR QUÉ.</strong> Quieres comprobar con tus propios ojos que <strong>rechazar funciona</strong>. Esa comprobación vale más que cualquier promesa.</p>
+
+  <h4>SI NO APARECE LA TARJETA</h4>
+  <ul>
+    <li>Puede que hayas cambiado los ajustes para que Muse <strong>no</strong> pregunte (revisa la acción 1.5).</li>
+    <li>Puede que la tarjeta aparezca en la <strong>app o la web</strong> y no en WhatsApp (<span class="tag unv">❓ no está documentado</span>). Abre la app o muse.ai.</li>
+    <li>Si Muse <strong>envió el correo sin tarjeta</strong>, no sigas: desactiva el permiso de enviar, desconecta el conector y reporta el problema a Meta desde Ayuda y soporte (<span class="tag ok">✅</span> las condiciones indican que se puede reportar ahí).</li>
+  </ul>
+
+  <h4>🔹 Parte D · Modifica la instrucción</h4>
+  <p><strong>👉 HAZ ESTO.</strong> Envía:</p>
+
+  <div class="prompt">
+    <span class="promptLabel">Prompt D · modificar el borrador</span>
+    <button class="copyBtn" type="button" data-copy="Cambia el asunto a &quot;Mi primera tarea con Muse&quot; y reduce el texto a dos frases. Prepáralo otra vez y no lo envíes sin mi aprobación.">Copiar</button>
+    <pre>Cambia el asunto a "Mi primera tarea con Muse" y reduce el texto a dos frases. Prepáralo otra vez y no lo envíes sin mi aprobación.</pre>
+  </div>
+
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> Un borrador nuevo con los cambios.</p>
+  <p><strong>💡 POR QUÉ.</strong> Un agente se dirige <strong>hablándole</strong>. No tienes que empezar de cero: ajustas la instrucción.</p>
+
+  <h4>🔹 Parte E · Aprueba finalmente</h4>
+  <p><strong>👉 HAZ ESTO.</strong></p>
+  <ol>
+    <li>Escribe: <em>«Ahora sí, envíalo.»</em></li>
+    <li>Cuando aparezca la tarjeta, <strong>lee de nuevo</strong> destinatario, asunto y texto.</li>
+    <li>Si te ofrece varias opciones de permiso, elige la <strong>más estrecha</strong> (<span class="tag ok">✅</span> Meta indica que existen permisos de una sola vez, por sesión, por tarea, temporales o permanentes). <span class="tag mine">🧭</span> Para este reto, <strong>«solo esta vez»</strong>.</li>
+    <li><strong>Pulsa «aceptar».</strong></li>
+    <li>Comprueba en tu Gmail que el correo llegó <strong>solo a ti</strong>.</li>
+  </ol>
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> El correo con el asunto y el texto modificados.</p>
+
+  <h4>🧪 RETO FINAL DEL PASO 3</h4>
+  <p>Pídele ahora un correo para <strong>otra persona de confianza</strong> que sepa que se lo vas a mandar. Repite la secuencia: <em>borrador → plan → tarjeta → leer → decidir</em>. <strong>No lo envíes sin haber leído la tarjeta.</strong></p>
+
+  <hr>
+
+  <!-- PASO 4 -->
+  <h3 id="paso4">Paso 4 · Reto práctico: privacidad</h3>
+
+  <div class="card">
+    <p style="margin-top:0"><strong>🎯 OBJETIVO.</strong> Responder con hechos a esta pregunta: <strong>«¿Qué sabe Muse de mí y qué puedo hacer al respecto?»</strong></p>
+    <p style="margin-bottom:0"><strong>🧠 QUÉ ESTÁ PASANDO.</strong> Vas a darle un dato <strong>inventado</strong>, comprobar dónde queda guardado, pedirle que lo olvide y verificar el resultado.</p>
+  </div>
+
+  <div class="note warn">
+    <strong>⚠️ ATENCIÓN.</strong> En este ejercicio usa <strong>solo información ficticia</strong>. <strong>No</strong> escribas contraseñas, datos bancarios ni información sensible real.
+  </div>
+
+  <h4>🔹 Parte A · Crea un recuerdo ficticio</h4>
+  <p><strong>👉 HAZ ESTO.</strong> Envía:</p>
+
+  <div class="prompt">
+    <span class="promptLabel">Prompt · recuerdo ficticio</span>
+    <button class="copyBtn" type="button" data-copy="Para practicar: mi planta imaginaria se llama Fernanda y le gusta la luz de la mañana. Es un dato inventado. Recuérdalo.">Copiar</button>
+    <pre>Para practicar: mi planta imaginaria se llama Fernanda y le gusta la luz de la mañana. Es un dato inventado. Recuérdalo.</pre>
+  </div>
+
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> Una confirmación de Muse.</p>
+
+  <h4>🔹 Parte B · Pregúntale qué recuerda</h4>
+  <p><strong>👉 HAZ ESTO.</strong> Envía: <em>«¿Qué recuerdas sobre mi planta imaginaria?»</em></p>
+  <p><strong>💡 POR QUÉ.</strong> Así compruebas que Muse <strong>guarda</strong> lo que le cuentas. Meta dice que recuerda incluso cosas que mencionaste una sola vez.</p>
+
+  <h4>🔹 Parte C · Mira la memoria con tus propios ojos</h4>
+  <p><strong>👉 HAZ ESTO.</strong></p>
+  <ol>
+    <li>Busca en la app o la web de Muse la sección de <strong>memoria</strong> o el <strong>explorador de archivos</strong> (los nombres pueden variar).</li>
+    <li>Busca el dato de «Fernanda».</li>
+  </ol>
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> <span class="tag ok">✅</span> Meta dice que puedes leer y editar la memoria que Muse tiene de ti. <span class="tag news">📰</span> TIME indica que esos archivos se ven desde el explorador de archivos de Muse. Si no encuentras la sección, anota que <strong>no pudiste comprobarlo</strong>.</p>
+  <p><strong>💡 POR QUÉ.</strong> No te fíes solo de lo que Muse <em>dice</em> que recuerda. <strong>Mira lo que realmente guarda.</strong></p>
+
+  <h4>🔹 Parte D · Pídele que lo olvide</h4>
+  <p><strong>👉 HAZ ESTO.</strong> Envía:</p>
+
+  <div class="prompt">
+    <span class="promptLabel">Prompt · pedir que olvide</span>
+    <button class="copyBtn" type="button" data-copy="Olvida todo lo que sabes sobre mi planta imaginaria Fernanda.">Copiar</button>
+    <pre>Olvida todo lo que sabes sobre mi planta imaginaria Fernanda.</pre>
+  </div>
+
+  <p><strong>💡 POR QUÉ.</strong> Recuerda: <span class="tag ok">✅</span> Meta confirma que puedes pedirle que olvide, pero <span class="tag unv">❓</span> <strong>no existe una frase exacta obligatoria</strong>. Se pide con lenguaje normal.</p>
+
+  <h4>🔹 Parte E · Comprueba el resultado</h4>
+  <p><strong>👉 HAZ ESTO.</strong></p>
+  <ol>
+    <li>Pregúntale: <em>«¿Qué recuerdas sobre mi planta imaginaria?»</em></li>
+    <li>Vuelve a mirar la <strong>memoria</strong> (Parte C).</li>
+    <li>Mira el <strong>chat</strong>: ¿sigue visible el mensaje donde lo contaste?</li>
+  </ol>
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> Que Muse ya no recuerde a Fernanda y que el dato haya desaparecido de la memoria.</p>
+  <div class="note warn">
+    <strong>⚠️ ATENCIÓN.</strong> <span class="tag news">📰</span> TIME informó de que pedirle que olvide <strong>no necesariamente borra el mensaje original</strong> del chat. Si el mensaje sigue visible, <strong>eso es normal con lo que se sabe hasta hoy</strong>. Por eso conviene <strong>no contarle nunca a Muse lo que no quieras que quede en el historial</strong>.
+  </div>
+
+  <h4>🔹 Parte F · ¿Qué aplicaciones están conectadas?</h4>
+  <p><strong>👉 HAZ ESTO.</strong></p>
+  <ol>
+    <li>Pregúntale: <em>«¿Qué aplicaciones tengo conectadas y qué permiso tiene cada una?»</em></li>
+    <li><strong>Compara su respuesta con la pantalla de Conectores</strong> en ajustes.</li>
+  </ol>
+  <p><strong>💡 POR QUÉ.</strong> Si hay diferencias, <strong>manda la pantalla de ajustes</strong>, no la respuesta del chat.</p>
+
+  <h4>🔹 Parte G · Revoca un permiso</h4>
+  <p><strong>👉 HAZ ESTO.</strong></p>
+  <ol>
+    <li>En ajustes, entra en <strong>Conectores</strong>.</li>
+    <li><strong>Desconecta Gmail</strong> (busca la opción equivalente a «Desconectar»).</li>
+    <li>Vuelve a pedirle un correo de prueba y comprueba que <strong>ya no puede</strong>.</li>
+  </ol>
+  <p><strong>👀 QUÉ DEBERÍAS VER.</strong> <span class="tag ok">✅</span> Según Meta, al desconectar, Muse <strong>deja de intercambiar datos</strong> con ese servicio.</p>
+  <div class="note warn">
+    <strong>⚠️ ATENCIÓN.</strong> <span class="tag ok">✅</span> Meta aclara que lo que Muse <strong>ya aprendió</strong> de ese conector <strong>puede seguir en su memoria y en tu historial</strong>. Desconectar <strong>no</strong> equivale a borrar. Usa la Parte D si quieres que olvide algo concreto.
+  </div>
+
+  <h4>🧪 RETO FINAL DEL PASO 4</h4>
+  <p>Rellena esta tabla con lo que <strong>tú</strong> hayas comprobado. Se guarda automáticamente en este navegador.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Pregunta</th><th>Mi respuesta (comprobada, no supuesta)</th></tr></thead>
+    <tbody>
+      <tr><td>¿Qué apps tiene conectadas Muse?</td><td><input class="fill" type="text" data-store="p4-1" placeholder="Escribe aquí…"></td></tr>
+      <tr><td>¿Dónde veo su memoria?</td><td><input class="fill" type="text" data-store="p4-2" placeholder="Escribe aquí…"></td></tr>
+      <tr><td>¿Funcionó pedirle que olvidara el dato?</td><td><input class="fill" type="text" data-store="p4-3" placeholder="Escribe aquí…"></td></tr>
+      <tr><td>¿Seguía visible el mensaje original?</td><td><input class="fill" type="text" data-store="p4-4" placeholder="Escribe aquí…"></td></tr>
+      <tr><td>¿Dejó de funcionar el conector al desconectarlo?</td><td><input class="fill" type="text" data-store="p4-5" placeholder="Escribe aquí…"></td></tr>
+      <tr><td>¿Dónde está el interruptor del entrenamiento de IA?</td><td><input class="fill" type="text" data-store="p4-6" placeholder="Escribe aquí…"></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Checklist de la práctica</h3>
+  <label class="check"><input type="checkbox" data-ck="p1"><span>Conecté Gmail y vi los permisos antes de aceptarlos.</span></label>
+  <label class="check"><input type="checkbox" data-ck="p2"><span>Rechacé una tarjeta de aprobación y comprobé que no se envió nada.</span></label>
+  <label class="check"><input type="checkbox" data-ck="p3"><span>Aprobé una tarjeta eligiendo el permiso más estrecho.</span></label>
+  <label class="check"><input type="checkbox" data-ck="p4"><span>Encontré la memoria de Muse y vi el dato ficticio con mis propios ojos.</span></label>
+  <label class="check"><input type="checkbox" data-ck="p5"><span>Desconecté un conector y comprobé que Muse ya no puede usarlo.</span></label>
+
+</section>
+
+<!-- ============================================================
+     PANEL · ERRORES
+     ============================================================ -->
+<section class="panel" id="p-errores">
+
+  <h2>Errores frecuentes y cómo corregirlos</h2>
+  <p class="lead">Casi todos los problemas vienen de cinco causas. Aquí están todas, con su solución.</p>
+
+  <h3>Errores de formulación: ejemplos correctos e incorrectos</h3>
+
+  <div class="grid two">
+    <div class="card" style="border-color:var(--bad)">
+      <h4 style="color:var(--bad);margin-top:0">❌ Incorrecto</h4>
+      <p style="margin-bottom:0"><em>«Hazme un correo.»</em></p>
+      <p class="small" style="margin-bottom:0">No dice a quién, ni con qué contenido, ni si puede enviarlo. Muse improvisará y probablemente tengas que rehacerlo todo.</p>
+    </div>
+    <div class="card" style="border-color:var(--ok)">
+      <h4 style="color:var(--ok);margin-top:0">✅ Correcto</h4>
+      <p style="margin-bottom:0"><em>«Prepárame un borrador de correo para [persona] con asunto [X] y estos tres puntos: [1, 2, 3]. Enséñamelo aquí antes de enviar nada.»</em></p>
+      <p class="small" style="margin-bottom:0">Dice qué, para quién, con qué contenido y qué NO debe hacer sin permiso.</p>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="card" style="border-color:var(--bad)">
+      <h4 style="color:var(--bad);margin-top:0">❌ Incorrecto</h4>
+      <p style="margin-bottom:0"><em>«Ya te dije que sí, envíalo.»</em></p>
+      <p class="small" style="margin-bottom:0">Tu «sí» en el chat <strong>no</strong> es una aprobación. Meta explica que las aprobaciones son permisos estrictos, no sugerencias en la conversación.</p>
+    </div>
+    <div class="card" style="border-color:var(--ok)">
+      <h4 style="color:var(--ok);margin-top:0">✅ Correcto</h4>
+      <p style="margin-bottom:0"><em>«Envíalo.»</em> y después pulsar <strong>aceptar</strong> en la tarjeta de aprobación que aparezca en la app o la web de Muse.</p>
+      <p class="small" style="margin-bottom:0">La tarjeta se muestra en la interfaz de Muse, no en el chat: es una medida de seguridad.</p>
+    </div>
+  </div>
+
+  <h3>Tabla de errores, causas y soluciones</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Qué te pasa</th><th>Por qué</th><th>Cómo se arregla</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>No encuentro la app de Muse o me dice «no disponible en tu país»</td>
+        <td>Muse solo está en EE. UU. y Canadá <span class="tag ok">✅</span></td>
+        <td>Esperar al lanzamiento oficial. <strong>No</strong> usar VPN ni trucos: arriesgas la cuenta.</td>
+      </tr>
+      <tr>
+        <td>No encuentro «Canales de mensajería»</td>
+        <td>El nombre cambia o la función aún no está en tu cuenta <span class="tag news">📰</span></td>
+        <td>Busca en ajustes algo equivalente a «WhatsApp». El nombre exacto puede variar.</td>
+      </tr>
+      <tr>
+        <td>Escribo en WhatsApp y no me contesta</td>
+        <td>La vinculación no se completó</td>
+        <td>Revisa el estado del canal en los ajustes de Muse y vuelve a vincular.</td>
+      </tr>
+      <tr>
+        <td>Muse envió el correo sin pedirme permiso</td>
+        <td>Cambiaste el ajuste de aprobaciones, o hay un fallo</td>
+        <td>No sigas: desactiva el permiso de enviar, desconecta el conector y repórtalo a Meta desde Ayuda y soporte.</td>
+      </tr>
+      <tr>
+        <td>No aparece la tarjeta de aprobación en WhatsApp</td>
+        <td><span class="tag unv">❓</span> No está documentado dónde aparece la tarjeta cuando pides algo desde WhatsApp</td>
+        <td>Mantén abierta la app o la web de Muse (<em>muse.ai</em>) mientras haces tareas con aprobaciones.</td>
+      </tr>
+      <tr>
+        <td>Le pedí que olvidara algo y el mensaje sigue en el chat</td>
+        <td><span class="tag news">📰 TIME:</span> pedirle que olvide no siempre borra el mensaje original</td>
+        <td>Es lo esperado según lo que se sabe hoy. Además de pedírselo, edita la memoria a mano. Y no le cuentes lo que no quieras que quede.</td>
+      </tr>
+      <tr>
+        <td>Desconecté Gmail pero Muse sigue «sabiendo» cosas mías</td>
+        <td><span class="tag ok">✅</span> Desconectar no es borrar: lo aprendido puede seguir en memoria e historial</td>
+        <td>Pide que olvide lo concreto (Paso 4, Parte D) y edita los archivos de memoria (Parte C).</td>
+      </tr>
+      <tr>
+        <td>Dejé de escribirle pero sigue haciendo cosas</td>
+        <td><span class="tag ok">✅</span> Muse trabaja en segundo plano y por horarios</td>
+        <td>Cancela antes tus tareas y objetivos en curso. Pregúntale: <em>«Enséñame todas las tareas y objetivos que tienes en marcha.»</em></td>
+      </tr>
+      <tr>
+        <td>Alguien me pide el código de 6 dígitos de WhatsApp para «activar Muse»</td>
+        <td>Es una estafa clásica de robo de cuenta</td>
+        <td><strong>No lo compartas nunca.</strong> Nadie legítimo te pide ese código.</td>
+      </tr>
+      <tr>
+        <td>Encontré una guía con trucos para saltarse la restricción regional</td>
+        <td>No son procedimientos oficiales</td>
+        <td>No los sigas ni los copies. Las condiciones permiten a Meta cerrar tu acceso sin aviso previo.</td>
+      </tr>
+      <tr>
+        <td>«Tu dinero y tus contraseñas están completamente a salvo»</td>
+        <td><span class="tag unv">❌</span> Es falso como promesa</td>
+        <td>Meta misma dice que Muse puede equivocarse y que no es inmune a ataques. Supervisa siempre.</td>
+      </tr>
+      <tr>
+        <td>Le pido «/disconnect» y no pasa nada</td>
+        <td><span class="tag unv">❓</span> No está documentado como comando</td>
+        <td>Usa la vía de ajustes: Canales de mensajería → WhatsApp → Desconectar.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Mitos que conviene desmontar</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Se dice…</th><th>Realidad</th></tr></thead>
+    <tbody>
+      <tr><td>«Muse es lo mismo que Meta AI de WhatsApp.»</td><td><span class="tag news">📰</span> Son distintos. Muse es tu agente personal y requiere su propia cuenta.</td></tr>
+      <tr><td>«Como Sentinel lo revisa todo, no puede pasar nada malo.»</td><td><span class="tag ok">✅</span> Meta admite que Muse puede equivocarse y que la inyección de instrucciones sigue sin resolverse.</td></tr>
+      <tr><td>«Si le pido que olvide, desaparece para siempre.»</td><td><span class="tag news">📰</span> Puede no borrar el mensaje original, y Meta puede conservar registros.</td></tr>
+      <tr><td>«Con VPN es igual de válido.»</td><td><span class="tag unv">❌</span> No es un procedimiento oficial y puede costarte la cuenta.</td></tr>
+      <tr><td>«Muse trabaja solo dentro de la app.»</td><td><span class="tag ok">✅</span> Trabaja en su máquina virtual en la nube, incluso en segundo plano.</td></tr>
+      <tr><td>«Mis datos están cifrados de forma que ni Meta puede verlos.»</td><td><span class="tag ok">✅</span> Eso es «Muse Confidential VM», que <strong>todavía no está disponible</strong>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL · RESUMEN
+     ============================================================ -->
+<section class="panel" id="p-resumen">
+
+  <h2>Resumen final</h2>
+
+  <h3>Las diez reglas de oro</h3>
+  <ol>
+    <li><strong>Un agente hace, un chatbot responde.</strong> Dale objetivos claros, no órdenes vagas.</li>
+    <li><strong>Empieza con poco.</strong> Una cuenta de prueba, un correo para ti, nada sensible.</li>
+    <li><strong>Lee cada tarjeta de aprobación antes de pulsar.</strong> Destinatario, asunto, texto, importe.</li>
+    <li><strong>Elige el permiso más estrecho.</strong> «Solo esta vez» antes que «siempre».</li>
+    <li><strong>Tu «sí» en el chat no sustituye a la tarjeta.</strong></li>
+    <li><strong>Verifica en los ajustes, no solo en lo que Muse te cuenta.</strong></li>
+    <li><strong>Pedirle que olvide no siempre borra el mensaje original.</strong> No le cuentes lo que no quieras que quede.</li>
+    <li><strong>Desconectar no es borrar.</strong> Son cosas distintas.</li>
+    <li><strong>Muse puede equivocarse.</strong> Meta misma lo dice. Tú eres responsable de lo que hace en tu nombre.</li>
+    <li><strong>No te saltes la restricción regional.</strong> Espera a que llegue oficialmente a tu país.</li>
+  </ol>
+
+  <h3>Qué has aprendido</h3>
+  <ol>
+    <li>Un agente se diferencia de un chatbot porque <strong>ejecuta pasos</strong> con las herramientas y permisos que le das.</li>
+    <li>Muse se usa desde su app, desde muse.ai y desde WhatsApp.</li>
+    <li>Con Muse conservas el control <strong>si</strong> revisas permisos, aprobaciones, memoria y conectores.</li>
+  </ol>
+
+  <h3>Checklist final</h3>
+  <label class="check"><input type="checkbox" data-ck="f1"><span>Tengo claro que Muse solo funciona en EE. UU. y Canadá y que no voy a usar VPN.</span></label>
+  <label class="check"><input type="checkbox" data-ck="f2"><span>Sé distinguir entre un conector de solo lectura y uno que puede enviar o cambiar cosas.</span></label>
+  <label class="check"><input type="checkbox" data-ck="f3"><span>Sé qué es Sentinel, qué revisa y qué NO garantiza.</span></label>
+  <label class="check"><input type="checkbox" data-ck="f4"><span>Sé leer y editar la memoria que Muse guarda de mí.</span></label>
+  <label class="check"><input type="checkbox" data-ck="f5"><span>Sé desconectar WhatsApp, revocar conectores y cancelar tareas en curso.</span></label>
+  <label class="check"><input type="checkbox" data-ck="f6"><span>Sé que «desconectar» y «borrar» son cosas distintas.</span></label>
+
+  <h3>Glosario</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Término</th><th>Significado sencillo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Agente de IA</strong></td><td>Una IA que recibe un objetivo y ejecuta pasos para lograrlo, si tiene herramientas y permisos.</td></tr>
+      <tr><td><strong>API</strong></td><td>Un puente que permite que dos programas se comuniquen entre sí.</td></tr>
+      <tr><td><strong>Conector</strong></td><td>Una «llave limitada» que le da a Muse acceso a una app o servicio.</td></tr>
+      <tr><td><strong>Inyección de instrucciones</strong></td><td>Un texto escondido en una web o correo que intenta engañar a la IA para que obedezca órdenes ajenas.</td></tr>
+      <tr><td><strong>Modelo de IA</strong></td><td>El programa que genera las respuestas. En Muse se llama Muse Spark.</td></tr>
+      <tr><td><strong>Muse Secure VM</strong></td><td>La computadora aislada en la nube donde viven tu Muse y tus datos.</td></tr>
+      <tr><td><strong>Sentinel</strong></td><td>El supervisor separado que decide si una acción de Muse se permite, se deniega o se te pregunta.</td></tr>
+      <tr><td><strong>Tarjeta de aprobación</strong></td><td>Aviso con botones de aceptar o rechazar para una acción concreta.</td></tr>
+      <tr><td><strong>VM (máquina virtual)</strong></td><td>Una computadora que existe dentro de otra, en la nube.</td></tr>
+      <tr><td><strong>VPN</strong></td><td>Un servicio que hace que tu conexión parezca venir de otro país.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Preguntas frecuentes</h3>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Puedo usar Muse si vivo fuera de EE. UU. o Canadá?</h4>
+    <p style="margin-bottom:0">Hoy no, de forma oficial. Meta solo ofrece esperar al lanzamiento en tu país. <span class="tag mine">🧭</span> Usar una VPN no es un procedimiento oficial y puede costarte la cuenta.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Es gratis?</h4>
+    <p style="margin-bottom:0"><span class="tag ok">✅</span> Es gratis para la mayor parte de lo que la gente necesita, con un <strong>límite de uso</strong>. Hay planes de pago para quien quiere más.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Muse es lo mismo que Meta AI?</h4>
+    <p style="margin-bottom:0">No. <span class="tag news">📰</span> WhatsApp ya incluye Meta AI. Muse es un agente <strong>distinto</strong>, tu agente personal, y requiere su propia cuenta.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Existe un código secreto para activar Muse en WhatsApp?</h4>
+    <p style="margin-bottom:0"><span class="tag unv">❓</span> No he encontrado ninguno documentado. <strong>No escribas códigos inventados.</strong> Sigue solo lo que aparezca en tu pantalla. Y nunca compartas el código de 6 dígitos de WhatsApp con nadie.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">Si le pido que olvide algo, ¿desaparece del todo?</h4>
+    <p style="margin-bottom:0"><span class="tag ok">✅</span> Puedes pedírselo, pero <span class="tag news">📰 TIME</span> informó de que <strong>el mensaje original puede seguir en el chat</strong>. Compruébalo tú mismo: pide que olvide, mira la memoria y mira el historial.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Sentinel me protege de todo?</h4>
+    <p style="margin-bottom:0">No. <span class="tag ok">✅</span> Meta dice que Muse <strong>puede y va a equivocarse</strong>, que «no es inmune a ataques» y que la inyección de instrucciones sigue sin resolverse. Sentinel reduce el riesgo; no lo elimina.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Mis conversaciones se usan para entrenar la IA?</h4>
+    <p style="margin-bottom:0"><span class="tag ok">✅</span> Se pueden usar salvo que lo desactives en «Controles de datos» (el nombre puede variar). <span class="tag news">📰</span> Un medio indica que por defecto está activado.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Meta ve lo que hay en mi máquina virtual?</h4>
+    <p style="margin-bottom:0"><span class="tag ok">✅</span> Los datos están aislados por usuario, pero Meta admite que esa arquitectura <strong>no impide que Meta acceda a los datos cuando sea necesario</strong> para dar soporte, proteger o hacer funcionar el servicio. El modo con cifrado total («Muse Confidential VM») <strong>todavía no está disponible</strong>.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Qué pasa si rechazo una tarjeta de aprobación?</h4>
+    <p style="margin-bottom:0"><span class="tag ok">✅</span> La acción <strong>no se ejecuta</strong>. Qué hace Muse después no está documentado: pídele tú qué quieres que haga.</p>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0">¿Puedo darle mi contraseña o mi tarjeta?</h4>
+    <p style="margin-bottom:0"><span class="tag mine">🧭</span> No. Practica siempre con datos ficticios o de prueba. Para pagos, Meta usa Link de Stripe, que genera una tarjeta de un solo uso para que tu tarjeta real quede oculta.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL · FUENTES
+     ============================================================ -->
+<section class="panel" id="p-fuentes">
+
+  <h2>Fuentes consultadas</h2>
+  <p class="small">Fecha de consulta de todas las fuentes: <strong>8 de octubre de 2026</strong>. Cada URL va en un bloque de texto plano con su botón <strong>Copiar</strong>.</p>
+
+  <h3>Fuentes oficiales</h3>
+
+  <h4>1 · Meta Newsroom, «Introducing Muse» (8 sept., actualizado 30 sept. 2026)</h4>
+  <p class="small">Qué se utilizó: qué es Muse, Muse Spark, Secure VM, Sentinel, aprobaciones, «olvidar», publicidad, entrenamiento, Confidential VM pendiente, lanzamiento en EE. UU. · Consulta: página completa.</p>
+  <div class="urlbox">
+    <code>https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/</code>
+    <button class="copyBtn" type="button" data-copy="https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/">Copiar</button>
+  </div>
+
+  <h4>2 · Meta Newsroom, «Muse for Small Business» (29 sept. 2026)</h4>
+  <p class="small">Qué se utilizó: disponibilidad en EE. UU. y Canadá; conectores de trabajo; conectores propios. · Consulta: página completa.</p>
+  <div class="urlbox">
+    <code>https://about.fb.com/news/2026/09/introducing-muse-small-business/</code>
+    <button class="copyBtn" type="button" data-copy="https://about.fb.com/news/2026/09/introducing-muse-small-business/">Copiar</button>
+  </div>
+
+  <h4>3 · Meta AI Research, «How We Built Safety Into Muse» (8 sept. 2026)</h4>
+  <p class="small">Qué se utilizó: cómo funcionan Sentinel, aprobaciones, credenciales, navegador, compras, política de datos. · Consulta: página completa.</p>
+  <div class="urlbox">
+    <code>https://research.meta.ai/blog/security-and-safety-for-ai-agents-our-approach-with-muse</code>
+    <button class="copyBtn" type="button" data-copy="https://research.meta.ai/blog/security-and-safety-for-ai-agents-our-approach-with-muse">Copiar</button>
+  </div>
+
+  <h4>4 · Muse, «How We Designed Muse» (sept. 2026)</h4>
+  <p class="small">Qué se utilizó: segundo plano, registro de actividad, tarjetas de aprobación, memoria visible, nombre y avatar. · Consulta: página completa.</p>
+  <div class="urlbox">
+    <code>https://introducing.muse.ai</code>
+    <button class="copyBtn" type="button" data-copy="https://introducing.muse.ai">Copiar</button>
+  </div>
+
+  <h4>5 · Muse Supplemental Terms of Service (8 sept. 2026)</h4>
+  <p class="small">Qué se utilizó: edad mínima, responsabilidad del usuario, supervisión, suspensión de cuentas, registros, conectores, entrenamiento. · Consulta: página completa.</p>
+  <div class="urlbox">
+    <code>https://muse.ai/terms</code>
+    <button class="copyBtn" type="button" data-copy="https://muse.ai/terms">Copiar</button>
+  </div>
+
+  <h4>6 · Meta Help Center, «Cómo funciona Muse con conectores»</h4>
+  <p class="small">Qué se utilizó: cómo conectar, qué pasa al desconectar, aprobaciones, «olvidar interacciones». · Consulta: <strong>solo extracto del buscador</strong> (la página no se cargó).</p>
+  <div class="urlbox">
+    <code>https://www.meta.com/es-la/help/artificial-intelligence/1687253048996149/</code>
+    <button class="copyBtn" type="button" data-copy="https://www.meta.com/es-la/help/artificial-intelligence/1687253048996149/">Copiar</button>
+  </div>
+
+  <h4>7 · AI at Meta, «Learn»</h4>
+  <p class="small">La página se abrió pero <strong>no mostró contenido legible</strong>; no se usó.</p>
+  <div class="urlbox">
+    <code>https://ai.meta.com/learn/</code>
+    <button class="copyBtn" type="button" data-copy="https://ai.meta.com/learn/">Copiar</button>
+  </div>
+
+  <h4>8 · WhatsApp FAQ (enlace del documento de partida)</h4>
+  <p class="small"><strong>No pude abrirla</strong> (el sitio bloquea la lectura automática); <strong>no se usó. Léela tú.</strong></p>
+  <div class="urlbox">
+    <code>https://faq.whatsapp.com/1516007700293140/?helpref=uf_share</code>
+    <button class="copyBtn" type="button" data-copy="https://faq.whatsapp.com/1516007700293140/?helpref=uf_share">Copiar</button>
+  </div>
+
+  <h3>Fuentes periodísticas / independientes</h3>
+
+  <h4>9 · TIME, Harry Booth, «Meta's Muse AI Agent Is Building a Dossier On You» (6 oct. 2026)</h4>
+  <p class="small">Qué se utilizó: fichas horarias de usuarios y terceros, aprendizajes desidentificados, límite de «olvidar», respuesta de Meta. · Consulta: página completa.</p>
+  <div class="urlbox">
+    <code>https://time.com/article/2026/10/06/meta-muse-ai-agent-privacy/</code>
+    <button class="copyBtn" type="button" data-copy="https://time.com/article/2026/10/06/meta-muse-ai-agent-privacy/">Copiar</button>
+  </div>
+
+  <h4>10 · Engadget, «How to get started with Meta's new AI agent, Muse»</h4>
+  <p class="small">Qué se utilizó: registro con teléfono, ajustes de datos y aprobaciones. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://www.engadget.com/2256577/how-to-get-started-with-meta-s-new-ai-agent-muse/</code>
+    <button class="copyBtn" type="button" data-copy="https://www.engadget.com/2256577/how-to-get-started-with-meta-s-new-ai-agent-muse/">Copiar</button>
+  </div>
+
+  <h4>11 · Gizmodo, «Meta's Muse Is Collecting Information on Everyone in Your Life»</h4>
+  <p class="small">Qué se utilizó: contexto sobre perfiles de personas del entorno del usuario. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://gizmodo.com/metas-muse-is-collecting-information-on-everyone-in-your-life-2000821697</code>
+    <button class="copyBtn" type="button" data-copy="https://gizmodo.com/metas-muse-is-collecting-information-on-everyone-in-your-life-2000821697">Copiar</button>
+  </div>
+
+  <h4>12 · Inc., «Meta's New Muse AI Agent Read My Private Messages. I Never Asked It To»</h4>
+  <p class="small">Qué se utilizó: relato personal sobre la app de Mac. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://www.inc.com/jason-aten/metas-new-muse-ai-agent-read-my-private-messages-i-never-asked-it-to/91408202</code>
+    <button class="copyBtn" type="button" data-copy="https://www.inc.com/jason-aten/metas-new-muse-ai-agent-read-my-private-messages-i-never-asked-it-to/91408202">Copiar</button>
+  </div>
+
+  <h3>Otras fuentes independientes (blogs y sitios no oficiales; fiabilidad menor)</h3>
+
+  <h4>13 · metamuseai.site, «Muse in WhatsApp»</h4>
+  <p class="small">Qué se utilizó: ruta observada para ver y desconectar WhatsApp. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://metamuseai.site/muse/whatsapp/</code>
+    <button class="copyBtn" type="button" data-copy="https://metamuseai.site/muse/whatsapp/">Copiar</button>
+  </div>
+
+  <h4>14 · metamuseai.site, disponibilidad</h4>
+  <p class="small">Qué se utilizó: países, fechas, edad. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://metamuseai.site/muse/availability/</code>
+    <button class="copyBtn" type="button" data-copy="https://metamuseai.site/muse/availability/">Copiar</button>
+  </div>
+
+  <h4>15 · PostFast, listas de conectores y disponibilidad</h4>
+  <p class="small">Qué se utilizó: conectores citados por Alexandr Wang; textos de la página de suscripciones de Meta. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://postfa.st/blog/meta-muse-connectors-list</code>
+    <button class="copyBtn" type="button" data-copy="https://postfa.st/blog/meta-muse-connectors-list">Copiar</button>
+  </div>
+
+  <h4>16 · AI Agents Library</h4>
+  <p class="small">Qué se utilizó: entradas a Muse y nombres de ajustes. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://www.aiagentslibrary.com/blog/how-to-use-meta-muse/</code>
+    <button class="copyBtn" type="button" data-copy="https://www.aiagentslibrary.com/blog/how-to-use-meta-muse/">Copiar</button>
+  </div>
+
+  <h4>17 · Zapier, «Muse AI»</h4>
+  <p class="small">Qué se utilizó: opciones de registro. · Consulta: solo extracto.</p>
+  <div class="urlbox">
+    <code>https://zapier.com/blog/muse-ai/</code>
+    <button class="copyBtn" type="button" data-copy="https://zapier.com/blog/muse-ai/">Copiar</button>
+  </div>
+
+  <h4>18 · Varios blogs sobre disponibilidad y VPN</h4>
+  <p class="small">usecarly.com, roborhythms.com, openmausbot.com, tryagentsonic.com. Qué se utilizó: estado por países, pantalla de espera, restricciones por tienda de apps. · Consulta: solo extracto.</p>
+
+  <div class="note warn">
+    <p style="margin-top:0"><strong>Limitaciones de esta investigación.</strong> Dos de las tres fuentes que pedía el documento de partida no pude leerlas de forma fiable: la FAQ de WhatsApp (bloqueada) y ai.meta.com/learn (sin contenido legible). Por eso la parte de <strong>activación y desconexión en WhatsApp</strong> descansa en observaciones de terceros y está marcada como tal. Varias fuentes secundarias las leí solo en extracto. Antes de publicar este tutorial, conviene abrir la ayuda oficial de WhatsApp y confirmar el procedimiento.</p>
+    <p style="margin-bottom:0"><span class="tag mine">🧭</span> Si algo de este tutorial no coincide con lo que ves en tu pantalla, <strong>manda siempre lo que ves en pantalla</strong>.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     PANEL · CRÉDITOS
+     ============================================================ -->
+<section class="panel" id="p-creditos">
+
+  <h2>Créditos</h2>
+
+  <div class="hero-svg-mount" data-svg-hero="true" role="img" aria-label="Esquema animado: tú escribes desde WhatsApp, Muse recibe el objetivo y trabaja como agente, y Sentinel supervisa cada acción antes de permitirla."></div>
+  <p class="svgCaption">El mismo dibujo de la portada: tú das el objetivo desde WhatsApp · Muse lo ejecuta · Sentinel supervisa.</p>
+
+  <div class="authorCard">
+    <h1 class="authorName">Rubén Sbarsky</h1>
+    <p class="authorRole">Autor del tutorial</p>
+    <div class="metaRow">
+      <span class="metaPill">📅 08/10/2026 — 18:42:07</span>
+      <span class="metaPill">🏷️ Versión V001</span>
+      <span class="metaPill">🌍 Información comprobada el 8 de octubre de 2026</span>
+    </div>
+  </div>
+
+  <h3>Sobre este tutorial</h3>
+  <div class="card">
+    <p style="margin-top:0">Tutorial práctico <strong>«Aprender Haciendo»</strong>, de nivel cero y pensado para personas no técnicas. Transforma el documento <em>«Meta Muse y su integración con WhatsApp»</em> en una guía interactiva con pestañas, buscador, checklist de progreso y ejercicios.</p>
+    <p style="margin-bottom:0">No es publicidad. Incluye lo útil, los límites y las partes incómodas, sobre todo las de privacidad.</p>
+  </div>
+
+  <h3>Novedades de esta versión</h3>
+  <div class="card">
+    <ul style="margin:0">
+      <li><strong>V001</strong> · Primera versión interactiva. Nueve pestañas, SVG animado idéntico en INICIO y CRÉDITOS, buscador global, tamaño de texto, modo claro/oscuro, impresión a PDF, checklist con progreso guardado y prompts copiables.</li>
+    </ul>
+  </div>
+
+  <h3>Nota sobre el SVG animado</h3>
+  <div class="card">
+    <p style="margin-top:0">El dibujo animado de INICIO y el de esta pestaña son <strong>exactamente el mismo</strong>. Se define una sola vez y se monta por JavaScript en cada contenedor, con identificadores únicos por copia, para que ambos se animen de forma independiente y siempre desde el primer fotograma.</p>
+    <p style="margin-bottom:0" class="small">Si lo ves congelado o vacío, recarga la página. Si has reemplazado el archivo por una versión corregida con el mismo nombre, fuerza la recarga (Ctrl+F5 / Cmd+Shift+R) para evitar la copia en caché.</p>
+  </div>
+
+</section>
+
+</main>
+
+<button class="to-top" id="toTop" type="button" aria-label="Volver arriba">↑</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ==========================================================
+     0. UTILIDADES
+     ========================================================== */
+  var $  = function(sel, ctx){ return (ctx || document).querySelector(sel); };
+  var $$ = function(sel, ctx){ return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); };
+
+  var STORAGE_CHECKS = 'muse_tut_checks_v1';
+  var STORAGE_FILLS  = 'muse_tut_fills_v1';
+  var STORAGE_THEME  = 'muse_tut_theme_v1';
+  var STORAGE_FONT   = 'muse_tut_font_v1';
+
+  var inIframe = false;
+  try { inIframe = window.self !== window.top; } catch (e) { inIframe = true; }
+
+  /* ==========================================================
+     1. PESTAÑAS
+     ========================================================== */
+  var tabs   = $$('.tab');
+  var panels = $$('.panel');
+
+  function activateTab(id, silent){
+    var found = false;
+    tabs.forEach(function(t){
+      var on = (t.getAttribute('data-tab') === id);
+      t.classList.toggle('active', on);
+      if (on) found = true;
+    });
+    if (!found) return;
+
+    panels.forEach(function(p){
+      p.classList.toggle('active', p.id === 'p-' + id);
+    });
+
+    if (!silent){
+      try { history.replaceState(null, '', '#p-' + id); } catch (e) { /* noop */ }
+    }
+
+    /* IMPORTANTE: montar el SVG DESPUÉS de marcar el panel como activo */
+    mountActive();
+    refreshProgress();
+
+    if (!silent){
+      var main = document.getElementById('main');
+      var top = main ? (main.getBoundingClientRect().top + window.pageYOffset - 110) : 0;
+      if (top < 0) top = 0;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    }
+  }
+
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      activateTab(t.getAttribute('data-tab'), false);
+    });
+  });
+
+  window.addEventListener('hashchange', function(){
+    var h = (location.hash || '').replace('#', '');
+    if (h.indexOf('p-') === 0){
+      activateTab(h.slice(2), true);
+    }
+  });
+
+  /* ==========================================================
+     2. SVG ANIMADO ÚNICO (plantilla + montaje)
+     ========================================================== */
+  var seq = 0, TPL = null, imgMode = false;
+
+  function template(){
+    if (TPL) return TPL;
+    var src = document.getElementById('svgHeroSource');
+    if (!src){
+      TPL = { defs: '', art: '' };
+      return TPL;
+    }
+    var defsNode = src.querySelector('defs');
+    var artNode  = src.querySelector('#svgHero');
+    if (!defsNode || !artNode){
+      TPL = { defs: '', art: '' };
+      return TPL;
+    }
+    var d = defsNode.cloneNode(true);
+    var g = artNode.cloneNode(true);
+    var inner = d.querySelector('#svgHero');
+    if (inner && inner.parentNode) inner.parentNode.removeChild(inner);
+    g.removeAttribute('id');
+    TPL = { defs: d.innerHTML, art: g.outerHTML };
+    /* Quitar el SVG fuente del DOM para que no siga animando oculto */
+    if (src.parentNode) src.parentNode.removeChild(src);
+    return TPL;
+  }
+
+  function markup(uid){
+    var t = template();
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto" aria-hidden="true" focusable="false">'
+          + '<defs>' + t.defs + '</defs>' + t.art + '</svg>';
+    ['gBg', 'gAcc', 'fGlow'].forEach(function(id){
+      s = s.split('id="' + id + '"').join('id="' + id + '-' + uid + '"')
+           .split('url(#' + id + ')').join('url(#' + id + '-' + uid + ')');
+    });
+    return s;
+  }
+
+  function mountOne(m){
+    if (!m) return;
+    m.textContent = '';
+
+    if (imgMode){
+      var im = new Image();
+      im.alt = '';
+      im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markup('i' + (++seq)));
+      m.appendChild(im);
+      return;
+    }
+
+    m.innerHTML = markup('h' + (++seq));
+    var svg = m.querySelector('svg');
+    if (!svg) return;
+
+    try { svg.setCurrentTime(0); svg.unpauseAnimations(); } catch (e) { /* noop */ }
+
+    var t0 = 0;
+    try { t0 = svg.getCurrentTime(); } catch (e) { t0 = 0; }
+
+    setTimeout(function(){
+      if (document.hidden) return;
+      if (m.querySelector('svg') !== svg) return;
+      var box = svg.getBoundingClientRect();
+      var now = 0;
+      try { now = svg.getCurrentTime(); } catch (e) { return; }
+      if (box.height > 0 && (now - t0) < 0.3){
+        imgMode = true;
+        mountOne(m);
+      }
+    }, 1600);
+  }
+
+  function mountActive(){
+    $$('.panel.active [data-svg-hero]').forEach(function(m){ mountOne(m); });
+  }
+
+  function mountAll(){
+    $$('[data-svg-hero]').forEach(function(m){ mountOne(m); });
+  }
+
+  /* Red de seguridad: si el contenedor visible está vacío, remontar */
+  setInterval(function(){
+    if (document.hidden) return;
+    $$('.panel.active [data-svg-hero]').forEach(function(m){
+      if (!m.firstElementChild) mountOne(m);
+    });
+  }, 800);
+
+  /* ==========================================================
+     3. IMPRESIÓN / PDF
+     ========================================================== */
+  var detailsState = [];
+
+  function beforePrint(){
+    detailsState = [];
+    $$('details').forEach(function(d){
+      detailsState.push({ el: d, open: d.open });
+      d.open = true;
+    });
+
+    /* Montar el SVG de TODAS las pestañas, aunque no se hayan visitado */
+    mountAll();
+
+    /* Fijar en un fotograma completo */
+    setTimeout(function(){
+      $$('[data-svg-hero] svg').forEach(function(s){
+        try { s.pauseAnimations(); s.setCurrentTime(1.2); } catch (e) { /* noop */ }
+      });
+    }, 60);
+  }
+
+  function afterPrint(){
+    detailsState.forEach(function(o){
+      if (o && o.el) o.el.open = o.open;
+    });
+    detailsState = [];
+    $$('[data-svg-hero] svg').forEach(function(s){
+      try { s.unpauseAnimations(); } catch (e) { /* noop */ }
+    });
+  }
+
+  window.addEventListener('beforeprint', beforePrint);
+  window.addEventListener('afterprint', afterPrint);
+
+  var btnPrint = document.getElementById('btnPrint');
+  if (btnPrint){
+    btnPrint.addEventListener('click', function(){
+      beforePrint();
+      var ok = true;
+      try {
+        if (typeof window.print !== 'function'){ ok = false; }
+        else { window.print(); }
+      } catch (e) {
+        ok = false;
+      }
+      setTimeout(afterPrint, 700);
+
+      if (!ok || inIframe){
+        showToast('Si el diálogo de impresión no se abre, es porque este archivo se está viendo dentro de un visor. Abre el archivo HTML directamente en el navegador (no dentro de un visor) y pulsa Ctrl+P / Cmd+P.', 9000);
+      }
+    });
+  }
+
+  /* ==========================================================
+     4. TOAST
+     ========================================================== */
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function showToast(msg, ms){
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){
+      toastEl.classList.remove('show');
+    }, ms || 4000);
+  }
+
+  /* ==========================================================
+     5. COPIAR AL PORTAPAPELES
+     ========================================================== */
+  function copyText(text){
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function(resolve, reject){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '-1000px';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('copy failed'));
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.copyBtn') : null;
+    if (!btn) return;
+
+    var text = btn.getAttribute('data-copy');
+    if (text === null || text === undefined){
+      var box = btn.closest('.prompt, .urlbox');
+      var src = box ? box.querySelector('pre, code') : null;
+      text = src ? src.textContent : '';
+    }
+
+    copyText(text).then(function(){
+      var old = btn.textContent;
+      btn.textContent = '¡Copiado!';
+      btn.classList.add('done');
+      setTimeout(function(){
+        btn.textContent = old;
+        btn.classList.remove('done');
+      }, 1500);
+    }).catch(function(){
+      showToast('No se pudo copiar automáticamente. Selecciona el texto y cópialo a mano.', 4000);
+    });
+  });
+
+  /* ==========================================================
+     6. BUSCADOR
+     ========================================================== */
+  var searchInput = document.getElementById('searchInput');
+  var searchCount = document.getElementById('searchCount');
+
+  function clearHighlights(){
+    $$('mark.search-hl').forEach(function(m){
+      var parent = m.parentNode;
+      if (!parent) return;
+      parent.replaceChild(document.createTextNode(m.textContent), m);
+      parent.normalize();
+    });
+  }
+
+  function highlightIn(root, q){
+    var ql = q.toLowerCase();
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(node){
+        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        var el = node.parentNode;
+        if (!el || el.nodeType !== 1) return NodeFilter.FILTER_REJECT;
+        var tag = el.nodeName.toLowerCase();
+        if (tag === 'script' || tag === 'style' || tag === 'svg' || tag === 'mark') return NodeFilter.FILTER_REJECT;
+        if (el.closest && el.closest('[data-svg-hero]')) return NodeFilter.FILTER_REJECT;
+        if (node.nodeValue.toLowerCase().indexOf(ql) === -1) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    var nodes = [], n;
+    while ((n = walker.nextNode())) nodes.push(n);
+
+    var count = 0;
+    nodes.forEach(function(node){
+      var text = node.nodeValue;
+      var lower = text.toLowerCase();
+      var frag = document.createDocumentFragment();
+      var i = 0, idx;
+      while ((idx = lower.indexOf(ql, i)) !== -1){
+        if (idx > i) frag.appendChild(document.createTextNode(text.slice(i, idx)));
+        var mk = document.createElement('mark');
+        mk.className = 'search-hl';
+        mk.textContent = text.slice(idx, idx + q.length);
+        frag.appendChild(mk);
+        i = idx + q.length;
+        count++;
+      }
+      if (i < text.length) frag.appendChild(document.createTextNode(text.slice(i)));
+      if (node.parentNode) node.parentNode.replaceChild(frag, node);
+    });
+
+    return count;
+  }
+
+  var searchTimer = null;
+
+  function doSearch(){
+    var q = (searchInput.value || '').trim();
+    clearHighlights();
+
+    if (q.length < 2){
+      if (searchCount) searchCount.textContent = '';
+      return;
+    }
+
+    var total = 0;
+    var firstPanelId = null;
+
+    panels.forEach(function(p){
+      var found = highlightIn(p, q);
+      if (found > 0){
+        total += found;
+        if (!firstPanelId) firstPanelId = p.id;
+      }
+    });
+
+    if (searchCount){
+      searchCount.textContent = total === 0 ? 'Sin resultados' : (total + (total === 1 ? ' coincidencia' : ' coincidencias'));
+    }
+
+    if (total > 0 && firstPanelId){
+      var active = $('.panel.active');
+      if (!active || active.id !== firstPanelId){
+        activateTab(firstPanelId.replace('p-', ''), true);
+      }
+    }
+  }
+
+  if (searchInput){
+    searchInput.addEventListener('input', function(){
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(doSearch, 260);
+    });
+  }
+
+  /* ==========================================================
+     7. TAMAÑO DE TEXTO
+     ========================================================== */
+  var FONT_STEPS = [14, 15, 16, 17, 18, 19, 20, 22];
+  var fontIdx = 2;
+
+  function applyFont(){
+    document.body.style.fontSize = FONT_STEPS[fontIdx] + 'px';
+    try { localStorage.setItem(STORAGE_FONT, String(fontIdx)); } catch (e) { /* noop */ }
+  }
+
+  var btnFontUp = document.getElementById('btnFontUp');
+  var btnFontDown = document.getElementById('btnFontDown');
+
+  if (btnFontUp){
+    btnFontUp.addEventListener('click', function(){
+      fontIdx = Math.min(FONT_STEPS.length - 1, fontIdx + 1);
+      applyFont();
+    });
+  }
+  if (btnFontDown){
+    btnFontDown.addEventListener('click', function(){
+      fontIdx = Math.max(0, fontIdx - 1);
+      applyFont();
+    });
+  }
+
+  /* ==========================================================
+     8. MODO CLARO / OSCURO
+     ========================================================== */
+  var btnTheme = document.getElementById('btnTheme');
+
+  function applyTheme(light){
+    document.body.classList.toggle('light', !!light);
+    if (btnTheme) btnTheme.textContent = light ? '☀️' : '🌙';
+    try { localStorage.setItem(STORAGE_THEME, light ? 'light' : 'dark'); } catch (e) { /* noop */ }
+  }
+
+  if (btnTheme){
+    btnTheme.addEventListener('click', function(){
+      applyTheme(!document.body.classList.contains('light'));
+    });
+  }
+
+  /* ==========================================================
+     9. CHECKLIST + PROGRESO
+     ========================================================== */
+  var progressFill = document.getElementById('progressFill');
+
+  function refreshProgress(){
+    var boxes = $$('input[type="checkbox"][data-ck]');
+    var total = boxes.length;
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    if (progressFill) progressFill.style.width = pct + '%';
+  }
+
+  function saveChecks(){
+    var state = {};
+    $$('input[type="checkbox"][data-ck]').forEach(function(b){
+      state[b.getAttribute('data-ck')] = b.checked;
+    });
+    try { localStorage.setItem(STORAGE_CHECKS, JSON.stringify(state)); } catch (e) { /* noop */ }
+    refreshProgress();
+  }
+
+  function loadChecks(){
+    var raw = null;
+    try { raw = localStorage.getItem(STORAGE_CHECKS); } catch (e) { raw = null; }
+    if (!raw) { refreshProgress(); return; }
+    var state;
+    try { state = JSON.parse(raw); } catch (e) { refreshProgress(); return; }
+    $$('input[type="checkbox"][data-ck]').forEach(function(b){
+      var k = b.getAttribute('data-ck');
+      if (Object.prototype.hasOwnProperty.call(state, k)) b.checked = !!state[k];
+    });
+    refreshProgress();
+  }
+
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if (t && t.matches && t.matches('input[type="checkbox"][data-ck]')){
+      saveChecks();
+    }
+  });
+
+  /* ==========================================================
+     10. CAMPOS RELLENABLES
+     ========================================================== */
+  function saveFills(){
+    var state = {};
+    $$('input.fill[data-store]').forEach(function(i){
+      state[i.getAttribute('data-store')] = i.value;
+    });
+    try { localStorage.setItem(STORAGE_FILLS, JSON.stringify(state)); } catch (e) { /* noop */ }
+  }
+
+  function loadFills(){
+    var raw = null;
+    try { raw = localStorage.getItem(STORAGE_FILLS); } catch (e) { raw = null; }
+    if (!raw) return;
+    var state;
+    try { state = JSON.parse(raw); } catch (e) { return; }
+    $$('input.fill[data-store]').forEach(function(i){
+      var k = i.getAttribute('data-store');
+      if (Object.prototype.hasOwnProperty.call(state, k)) i.value = state[k];
+    });
+  }
+
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    if (t && t.matches && t.matches('input.fill[data-store]')){
+      if (searchTimer) clearTimeout(searchTimer);
+      saveFills();
+    }
+  });
+
+  /* ==========================================================
+     11. VOLVER ARRIBA
+     ========================================================== */
+  var toTop = document.getElementById('toTop');
+
+  function onScroll(){
+    if (!toTop) return;
+    if (window.pageYOffset > 400) toTop.classList.add('show');
+    else toTop.classList.remove('show');
+  }
+
+  if (toTop){
+    toTop.addEventListener('click', function(){
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ==========================================================
+     12. ARRANQUE
+     ========================================================== */
+  function boot(){
+    /* Tema */
+    var theme = null;
+    try { theme = localStorage.getItem(STORAGE_THEME); } catch (e) { theme = null; }
+    applyTheme(theme === 'light');
+
+    /* Fuente */
+    var fi = null;
+    try { fi = localStorage.getItem(STORAGE_FONT); } catch (e) { fi = null; }
+    if (fi !== null && fi !== undefined){
+      var parsed = parseInt(fi, 10);
+      if (!isNaN(parsed) && parsed >= 0 && parsed < FONT_STEPS.length) fontIdx = parsed;
+    }
+    applyFont();
+
+    /* Datos guardados */
+    loadChecks();
+    loadFills();
+
+    /* Pestaña inicial */
+    var startId = 'inicio';
+    var h = (location.hash || '').replace('#', '');
+    if (h.indexOf('p-') === 0){
+      var candidate = h.slice(2);
+      if (document.getElementById('p-' + candidate)) startId = candidate;
+    }
+    activateTab(startId, true);
+
+    /* Montar también el SVG de la otra pestaña con SVG (CRÉDITOS) por si
+       el usuario imprime sin visitarla. */
+    setTimeout(function(){
+      $$('[data-svg-hero]').forEach(function(m){
+        if (!m.firstElementChild) mountOne(m);
+      });
+    }, 120);
+
+    onScroll();
+    refreshProgress();
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+})();
+</script>
+</body>
+</html>
